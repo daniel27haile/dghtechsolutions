@@ -36,4 +36,9 @@ coverage/
 
 #
 .claude
+.gitignore
+.vscode/
+footer_logo.PNG/
+header_logo.PNG/
+README.md/
 
