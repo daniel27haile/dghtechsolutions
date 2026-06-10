@@ -1,0 +1,177 @@
+<div class="admin-page">
+
+  <div class="page-header">
+    <div>
+      <h1>Site Content</h1>
+      <p class="page-sub">Edit the text and copy displayed on every public page.</p>
+    </div>
+    @if (saved()) {
+      <span class="saved-badge">&#10003; Saved!</span>
+    }
+  </div>
+
+  <div class="content-editor">
+
+    <!-- ── Block nav sidebar ──────────────────────────────────────────── -->
+    <nav class="block-nav" aria-label="Content blocks">
+      @for (page of pages; track page) {
+        <div class="nav-group">
+          <div class="nav-group-label">{{ page }}</div>
+          @for (block of blocksForPage(page); track block.key) {
+            <button
+              class="nav-item"
+              [class.active]="activeKey() === block.key"
+              (click)="selectBlock(block.key)"
+              type="button">
+              {{ block.label }}
+            </button>
+          }
+        </div>
+      }
+    </nav>
+
+    <!-- ── Form area ──────────────────────────────────────────────────── -->
+    <div class="form-area">
+      <div class="form-card">
+
+        <div class="form-card-header">
+          <div>
+            <h2>{{ activeBlock.label }}</h2>
+            <span class="key-badge">{{ activeKey() }}</span>
+          </div>
+          <span class="page-tag">{{ activeBlock.page }}</span>
+        </div>
+
+        @if (loading()) {
+          <div class="form-loading">
+            <div class="spinner"></div>
+            <span>Loading content...</span>
+          </div>
+        } @else {
+          <form [formGroup]="form" (ngSubmit)="save()" novalidate class="form-body">
+
+            <!-- Title — shown for all blocks -->
+            <div class="form-group">
+              <label>Title / Heading</label>
+              <input formControlName="title" class="form-control"
+                     placeholder="Main heading text for this section" />
+            </div>
+
+            <!-- Subtitle — shown for all blocks -->
+            <div class="form-group">
+              <label>Subtitle / Eyebrow</label>
+              <textarea formControlName="subtitle" class="form-control" rows="2"
+                        placeholder="Short supporting text or eyebrow label above the heading"></textarea>
+            </div>
+
+            <!-- Body copy -->
+            @if (activeBlock.showBody) {
+              <div class="form-group">
+                <label>Body Content</label>
+                <textarea formControlName="body" class="form-control" rows="5"
+                          placeholder="Longer body copy shown in this section..."></textarea>
+              </div>
+            }
+
+            <!-- Image URL -->
+            @if (activeBlock.showImageUrl) {
+              <div class="form-group">
+                <label>Image URL</label>
+                <input formControlName="imageUrl" class="form-control" type="url"
+                       placeholder="https://..." />
+                <span class="hint">Full URL to the section image.</span>
+                @if (imagePreview()) {
+                  <div class="img-preview">
+                    <img [src]="imagePreview()" alt="Section image preview"
+                         (error)="imagePreview.set('')" />
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Highlights / bullet points -->
+            @if (activeBlock.showHighlights) {
+              <div class="form-group">
+                <label>Highlights (bullet points)</label>
+                <input formControlName="highlights" class="form-control"
+                       placeholder="Modern architecture, Agile process, On-time delivery" />
+                <span class="hint">Comma-separated. Each item becomes one bullet point on the page.</span>
+              </div>
+            }
+
+            <!-- CTA buttons -->
+            @if (activeBlock.showButtons) {
+              <div class="field-divider">Call-to-Action Buttons</div>
+              <div class="row-2">
+                <div class="form-group">
+                  <label>Primary Button Label</label>
+                  <input formControlName="primaryButtonText" class="form-control"
+                         placeholder="e.g. Get Started" />
+                </div>
+                <div class="form-group">
+                  <label>Primary Button URL</label>
+                  <input formControlName="primaryButtonUrl" class="form-control"
+                         placeholder="/contact" />
+                </div>
+              </div>
+              <div class="row-2">
+                <div class="form-group">
+                  <label>Secondary Button Label</label>
+                  <input formControlName="secondaryButtonText" class="form-control"
+                         placeholder="e.g. View Services" />
+                </div>
+                <div class="form-group">
+                  <label>Secondary Button URL</label>
+                  <input formControlName="secondaryButtonUrl" class="form-control"
+                         placeholder="/services" />
+                </div>
+              </div>
+            }
+
+            <!-- Contact info -->
+            @if (activeBlock.showContactInfo) {
+              <div class="field-divider">Contact Information</div>
+              <div class="row-2">
+                <div class="form-group">
+                  <label>Email Address</label>
+                  <input formControlName="email" class="form-control" type="email"
+                         placeholder="info@dghtechsolutions.com" />
+                </div>
+                <div class="form-group">
+                  <label>Phone Number</label>
+                  <input formControlName="phone" class="form-control"
+                         placeholder="+1 (555) 123-4567" />
+                </div>
+              </div>
+              <div class="row-2">
+                <div class="form-group">
+                  <label>Response Time</label>
+                  <input formControlName="responseTime" class="form-control"
+                         placeholder="Within 24 hours" />
+                </div>
+                <div class="form-group">
+                  <label>Availability Hours</label>
+                  <input formControlName="availability" class="form-control"
+                         placeholder="Mon–Fri, 9am–6pm EST" />
+                </div>
+              </div>
+            }
+
+            @if (errorMsg()) {
+              <div class="alert-error">{{ errorMsg() }}</div>
+            }
+
+            <div class="form-actions">
+              <button type="submit" class="btn-save" [disabled]="saving()">
+                {{ saving() ? 'Saving...' : 'Save Changes' }}
+              </button>
+              <span class="save-hint">Changes only affect this block.</span>
+            </div>
+
+          </form>
+        }
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,195 @@
+<!-- ─── HERO ──────────────────────────────────────────────────────────────── -->
+<section class="hero" aria-label="Hero">
+  <div class="hero-inner">
+    <div class="hero-content">
+      <p class="hero-eyebrow">
+        {{ hero()?.metadata?.['badge'] || 'Trusted Technology Partner' }}
+      </p>
+      <h1>
+        {{ hero()?.title || 'Building Digital Products That Perform' }}
+      </h1>
+      <p class="hero-sub">
+        {{ hero()?.subtitle || 'DGH Tech Solutions delivers world-class web development, mobile apps, and cloud services. From MVPs to enterprise-grade applications.' }}
+      </p>
+      <div class="hero-actions">
+        <a [routerLink]="hero()?.primaryButtonUrl || '/contact'" class="btn btn-hero-primary">
+          {{ hero()?.primaryButtonText || 'Start a Project' }}
+        </a>
+        <a [routerLink]="hero()?.secondaryButtonUrl || '/services'" class="btn btn-hero-outline">
+          {{ hero()?.secondaryButtonText || 'Our Services' }}
+        </a>
+      </div>
+    </div>
+
+    <!-- Hero visual — image from CMS or decorative code card fallback -->
+    <div class="hero-visual" aria-hidden="true">
+      @if (hero()?.imageUrl) {
+        <img class="hero-img" [src]="hero()!.imageUrl!" alt="" />
+      } @else {
+        <div class="code-card">
+          <div class="code-bar">
+            <span class="dot-red"></span>
+            <span class="dot-yellow"></span>
+            <span class="dot-green"></span>
+            <span class="code-filename">dgh.config.ts</span>
+          </div>
+          <pre><code><span class="kw">const</span> <span class="fn">dgh</span> = &#123;
+  <span class="key">name</span>:    <span class="str">'DGH Tech Solutions'</span>,
+  <span class="key">stack</span>:   [<span class="str">'Angular'</span>, <span class="str">'Node.js'</span>, <span class="str">'MongoDB'</span>],
+  <span class="key">mission</span>: <span class="str">'Build. Scale. Deliver.'</span>,
+  <span class="key">ready</span>:   <span class="bool">true</span>,
+&#125;</code></pre>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="stats-bar" aria-label="Company statistics">
+    <div class="stats-inner">
+      @for (s of stats(); track s.label) {
+        <div class="stat">
+          <strong [attr.aria-label]="s.value + ' ' + s.label">{{ s.value }}</strong>
+          <span aria-hidden="true">{{ s.label }}</span>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ─── SERVICES PREVIEW ──────────────────────────────────────────────────── -->
+<section class="section" aria-labelledby="services-heading">
+  <div class="container">
+    <app-section-title
+      [subtitle]="servicesPreview()?.subtitle || 'What We Do'"
+      [title]="servicesPreview()?.title || 'Our Core Services'"
+      [description]="servicesPreview()?.body || 'Comprehensive digital solutions tailored to your business needs and growth goals.'"
+      [center]="true"
+      headingId="services-heading"
+    />
+    <div class="services-grid" role="list">
+      @for (svc of services(); track svc._id) {
+        <div role="listitem">
+          <app-service-card [service]="svc" />
+        </div>
+      }
+    </div>
+    <div class="center-action">
+      <a routerLink="/services" class="btn btn--outline">View All Services</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── TECH STACK ────────────────────────────────────────────────────────── -->
+<section class="section stack-section" aria-labelledby="stack-heading">
+  <div class="container">
+    <app-section-title
+      subtitle="Our Toolkit"
+      title="Technologies We Master"
+      description="Full-stack expertise across the modern web ecosystem — from pixel to production."
+      [center]="true"
+      headingId="stack-heading"
+    />
+    <div class="stack-grid" role="list">
+      @for (group of techGroups; track group.label) {
+        <div class="stack-card" role="listitem">
+          <h3 class="stack-group-label">{{ group.label }}</h3>
+          <div class="stack-tags" [attr.aria-label]="group.label + ' technologies'">
+            @for (t of group.items; track t) {
+              <span class="stack-tag">{{ t }}</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ─── FEATURED PROJECTS ─────────────────────────────────────────────────── -->
+<section class="section section--gray" aria-labelledby="projects-heading">
+  <div class="container">
+    <app-section-title
+      [subtitle]="projectsPreview()?.subtitle || 'Our Work'"
+      [title]="projectsPreview()?.title || 'Featured Projects'"
+      [description]="projectsPreview()?.body || 'Real-world solutions built for clients across industries.'"
+      [center]="true"
+      headingId="projects-heading"
+    />
+    <app-project-carousel />
+    <div class="center-action project-cta">
+      <a routerLink="/contact" class="btn btn--primary">Start Your Project &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── ABOUT PREVIEW (dark) ─────────────────────────────────────────────── -->
+<section class="section section--dark about-section" aria-labelledby="about-heading">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-text">
+        <p class="eyebrow-light">{{ about()?.subtitle || 'About DGH Tech Solutions' }}</p>
+        <h2 id="about-heading">{{ about()?.title || 'A Technology Partner Built for Business Growth' }}</h2>
+        <p>{{ about()?.body || 'DGH Tech Solutions is a technology company focused on building high-quality web applications, mobile apps, cloud-based platforms, and AI-ready digital solutions. We combine deep technical expertise with a commitment to clean architecture, security, and long-term maintainability.' }}</p>
+        <div class="highlight-list" role="list">
+          @for (h of highlights(); track h) {
+            <div class="highlight-item" role="listitem">
+              <span class="check" aria-hidden="true">&#10003;</span>
+              <span>{{ h }}</span>
+            </div>
+          }
+        </div>
+        <a routerLink="/about" class="btn btn--outline mt-8">About Our Company &rarr;</a>
+      </div>
+      <div class="about-metrics" aria-label="Key metrics">
+        <div class="metric-card">
+          <div class="m-number" aria-label="50 plus projects delivered">50+</div>
+          <div class="m-label" aria-hidden="true">Projects Delivered</div>
+        </div>
+        <div class="metric-card">
+          <div class="m-number" aria-label="30 plus happy clients">30+</div>
+          <div class="m-label" aria-hidden="true">Happy Clients</div>
+        </div>
+        <div class="metric-card">
+          <div class="m-number" aria-label="5 plus years experience">5+</div>
+          <div class="m-label" aria-hidden="true">Years Experience</div>
+        </div>
+        <div class="metric-card">
+          <div class="m-number" aria-label="99 percent satisfaction rate">99%</div>
+          <div class="m-label" aria-hidden="true">Satisfaction Rate</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── WHY CHOOSE DGH ────────────────────────────────────────────────────── -->
+<section class="section" aria-labelledby="values-heading">
+  <div class="container">
+    <app-section-title
+      subtitle="Why Choose Us"
+      title="The DGH Difference"
+      description="We go beyond writing code — we build partnerships that drive results."
+      [center]="true"
+      headingId="values-heading"
+    />
+    <div class="values-grid" role="list">
+      @for (v of values; track v.title) {
+        <div class="value-card" role="listitem">
+          <div class="value-icon" aria-hidden="true">{{ v.icon }}</div>
+          <h3>{{ v.title }}</h3>
+          <p>{{ v.body }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ─── CTA ───────────────────────────────────────────────────────────────── -->
+<app-cta-section
+  [heading]="cta()?.title || 'Ready to Start Your Next Project?'"
+  [sub]="cta()?.subtitle || 'Tell us what you\'re building and our team will put together a clear plan of action.'"
+  [primaryLabel]="cta()?.primaryButtonText || 'Contact Our Team'"
+  [primaryLink]="cta()?.primaryButtonUrl || '/contact'"
+  [secondaryLabel]="cta()?.secondaryButtonText || 'View Our Services'"
+  [secondaryLink]="cta()?.secondaryButtonUrl || '/services'"
+/>

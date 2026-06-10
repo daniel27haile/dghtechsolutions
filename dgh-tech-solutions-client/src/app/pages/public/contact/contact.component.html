@@ -1,0 +1,239 @@
+<!-- Hero -->
+<section class="page-hero" aria-label="Contact hero">
+  <div class="inner">
+    <p class="eyebrow">Contact Us</p>
+    <h1>{{ content()?.title || 'Start a Conversation' }}</h1>
+    <p>{{ content()?.subtitle || "Have a project in mind or a question about our services? Send us a message and our team will respond within 24 hours." }}</p>
+  </div>
+</section>
+
+<section class="section" aria-label="Contact details and form">
+  <div class="container contact-layout">
+
+    <!-- Info panel -->
+    <aside class="info-panel" aria-label="Contact information">
+      <h2>Get in Touch</h2>
+      <p>{{ content()?.body || "Whether you need a new application built from scratch, an existing system improved, or guidance on cloud and infrastructure — our team is ready to help." }}</p>
+
+      <div class="info-items">
+        @if (contactMeta()['email']) {
+          <div class="info-item">
+            <div class="i-icon" aria-hidden="true">&#9993;</div>
+            <div>
+              <div class="i-label">Email</div>
+              <div class="i-value">{{ contactMeta()['email'] }}</div>
+            </div>
+          </div>
+        } @else {
+          <div class="info-item">
+            <div class="i-icon" aria-hidden="true">&#9993;</div>
+            <div>
+              <div class="i-label">Email</div>
+              <div class="i-value">info&#64;dghtechsolutions.com</div>
+            </div>
+          </div>
+        }
+        <div class="info-item">
+          <div class="i-icon" aria-hidden="true">&#8987;</div>
+          <div>
+            <div class="i-label">Response Time</div>
+            <div class="i-value">{{ contactMeta()['responseTime'] || 'Within 24 hours' }}</div>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="i-icon" aria-hidden="true">&#9719;</div>
+          <div>
+            <div class="i-label">Availability</div>
+            <div class="i-value">{{ contactMeta()['availability'] || 'Mon–Fri, 9am–6pm EST' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-note">
+        <strong>Free Project Consultation</strong>
+        <p>We offer a no-obligation initial consultation to review your requirements and outline a clear path forward.</p>
+      </div>
+    </aside>
+
+    <!-- Form panel -->
+    <div class="form-panel">
+      @if (success()) {
+        <div class="success-msg" role="status" aria-live="polite">
+          <div class="success-icon" aria-hidden="true">&#10003;</div>
+          <h3>Request Received</h3>
+          <p>Thank you for contacting DGH Tech Solutions. Your request has been received and a member of our team will follow up shortly.</p>
+        </div>
+      } @else {
+        <form [formGroup]="form" (ngSubmit)="submit()" novalidate aria-label="Project inquiry form">
+
+          <div class="form-header">
+            <h3>Start Your Project</h3>
+            <p>Share your business goals and project requirements. Our team will review your request and respond with the next steps.</p>
+          </div>
+
+          <div class="form-divider" aria-hidden="true"></div>
+
+          <!-- Row 1: Name + Company -->
+          <div class="row-2">
+            <div class="form-group">
+              <label for="contact-name">
+                Full Name <span class="required-mark" aria-label="required">*</span>
+              </label>
+              <input
+                id="contact-name"
+                type="text"
+                formControlName="name"
+                class="form-control"
+                [class.error]="isInvalid('name')"
+                placeholder="Michael Johnson"
+                autocomplete="name"
+                aria-required="true"
+                [attr.aria-invalid]="isInvalid('name') || null"
+                aria-describedby="name-err"
+              />
+              @if (isInvalid('name')) {
+                <span class="err" id="name-err" role="alert">Please enter your full name.</span>
+              }
+            </div>
+            <div class="form-group">
+              <label for="contact-company">
+                Company Name <span class="optional">(optional)</span>
+              </label>
+              <input
+                id="contact-company"
+                type="text"
+                formControlName="company"
+                class="form-control"
+                placeholder="Acme Logistics"
+                autocomplete="organization"
+              />
+            </div>
+          </div>
+
+          <!-- Row 2: Email + Phone -->
+          <div class="row-2">
+            <div class="form-group">
+              <label for="contact-email">
+                Business Email <span class="required-mark" aria-label="required">*</span>
+              </label>
+              <input
+                id="contact-email"
+                type="email"
+                formControlName="email"
+                class="form-control"
+                [class.error]="isInvalid('email')"
+                placeholder="michael.johnson@acmelogistics.com"
+                autocomplete="email"
+                aria-required="true"
+                [attr.aria-invalid]="isInvalid('email') || null"
+                aria-describedby="email-err"
+              />
+              @if (isInvalid('email')) {
+                <span class="err" id="email-err" role="alert">Please enter a valid business email address.</span>
+              }
+            </div>
+            <div class="form-group">
+              <label for="contact-phone">
+                Phone Number <span class="optional">(optional)</span>
+              </label>
+              <input
+                id="contact-phone"
+                type="tel"
+                formControlName="phone"
+                class="form-control"
+                [class.error]="isInvalid('phone')"
+                placeholder="(555) 123-4567"
+                autocomplete="tel"
+                [attr.aria-invalid]="isInvalid('phone') || null"
+                aria-describedby="phone-err"
+              />
+              @if (isInvalid('phone')) {
+                <span class="err" id="phone-err" role="alert">Please enter a valid phone number.</span>
+              }
+            </div>
+          </div>
+
+          <!-- Project Type -->
+          <div class="form-group">
+            <label for="contact-project-type">
+              Project Type <span class="required-mark" aria-label="required">*</span>
+            </label>
+            <select
+              id="contact-project-type"
+              formControlName="projectType"
+              class="form-control"
+              [class.error]="isInvalid('projectType')"
+              aria-required="true"
+              [attr.aria-invalid]="isInvalid('projectType') || null"
+              aria-describedby="project-type-err"
+            >
+              <option value="" disabled>Select a project type</option>
+              @for (t of projectTypes; track t) {
+                <option [value]="t">{{ t }}</option>
+              }
+            </select>
+            @if (isInvalid('projectType')) {
+              <span class="err" id="project-type-err" role="alert">Please select a project type.</span>
+            }
+          </div>
+
+          <!-- Row 3: Budget + Timeline -->
+          <div class="row-2">
+            <div class="form-group">
+              <label for="contact-budget">Project Budget</label>
+              <select id="contact-budget" formControlName="budget" class="form-control">
+                <option value="">Select a budget range</option>
+                @for (b of budgets; track b) {
+                  <option [value]="b">{{ b }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="contact-timeline">Project Timeline</label>
+              <select id="contact-timeline" formControlName="timeline" class="form-control">
+                <option value="">Select a timeline</option>
+                @for (tl of timelines; track tl) {
+                  <option [value]="tl">{{ tl }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <!-- Project Details -->
+          <div class="form-group">
+            <label for="contact-message">
+              Project Details <span class="required-mark" aria-label="required">*</span>
+            </label>
+            <textarea
+              id="contact-message"
+              formControlName="message"
+              class="form-control"
+              [class.error]="isInvalid('message')"
+              rows="6"
+              placeholder="We are looking to modernize our customer portal, integrate third-party APIs, and improve operational efficiency through a scalable web platform."
+              aria-required="true"
+              [attr.aria-invalid]="isInvalid('message') || null"
+              aria-describedby="message-err"
+            ></textarea>
+            @if (isInvalid('message')) {
+              <span class="err" id="message-err" role="alert">Please provide a brief description of your project requirements.</span>
+            }
+          </div>
+
+          @if (errorMsg()) {
+            <div class="alert-error" role="alert">{{ errorMsg() }}</div>
+          }
+
+          <button type="submit" class="btn-submit" [disabled]="loading()" [attr.aria-busy]="loading()">
+            @if (loading()) { Submitting... } @else { Request Consultation &rarr; }
+          </button>
+
+          <p class="form-footnote">
+            <span class="required-mark">*</span> Required fields. We respect your privacy and will never share your information.
+          </p>
+        </form>
+      }
+    </div>
+
+  </div>
+</section>

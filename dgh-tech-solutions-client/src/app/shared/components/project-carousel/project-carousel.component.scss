@@ -1,0 +1,449 @@
+// ── Variables ──────────────────────────────────────────────────────────────
+$gap:            24px;
+$card-radius:    16px;
+$arrow-size:     46px;
+$arrow-offset:   calc(-1 * #{$arrow-size} / 2 - 4px);
+
+// ── Screen reader only ─────────────────────────────────────────────────────
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// ── Shimmer animation ──────────────────────────────────────────────────────
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg,
+    var(--clr-gray-100) 25%,
+    var(--clr-gray-200) 50%,
+    var(--clr-gray-100) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+// ── Loading skeleton ───────────────────────────────────────────────────────
+.carousel-skeleton {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $gap;
+
+  @media (max-width: 1023px) { grid-template-columns: repeat(2, 1fr); > :last-child { display: none; } }
+  @media (max-width: 639px)  { grid-template-columns: 1fr; > :nth-child(n+2) { display: none; } }
+}
+
+.skeleton-card {
+  border-radius: $card-radius;
+  background: #fff;
+  border: 1px solid var(--clr-border);
+  overflow: hidden;
+}
+
+.skeleton-img  { height: 220px; }
+.skeleton-body { padding: 1.5rem; }
+
+.skeleton-badge {
+  height: 20px;
+  width: 80px;
+  border-radius: 999px;
+  margin-bottom: .9rem;
+}
+
+.skeleton-line {
+  height: 14px;
+  border-radius: 6px;
+  margin-bottom: .6rem;
+  &.w-full { width: 100%; }
+  &.w-80   { width: 80%; }
+  &.w-60   { width: 60%; }
+}
+
+.skeleton-tags {
+  display: flex;
+  gap: .4rem;
+  margin: .75rem 0;
+}
+.skeleton-tag { height: 24px; width: 60px; border-radius: 4px; }
+
+.skeleton-actions {
+  display: flex;
+  gap: .75rem;
+  margin-top: .75rem;
+}
+.skeleton-btn { height: 34px; width: 90px; border-radius: 8px; }
+
+// ── Shared state panel ─────────────────────────────────────────────────────
+.carousel-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 2rem;
+  gap: 1rem;
+  background: rgba(255,255,255,.6);
+  border: 1.5px dashed var(--clr-border);
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+
+  h3 { font-size: 1.2rem; font-weight: 700; color: var(--clr-dark); margin: 0; }
+  p  { color: var(--clr-text-muted); font-size: .95rem; max-width: 36ch; margin: 0; }
+}
+
+.state-icon {
+  font-size: 2.5rem;
+  opacity: .35;
+  line-height: 1;
+  &--error { opacity: .7; color: var(--clr-warning); }
+}
+
+.state-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .65rem 1.5rem;
+  background: var(--clr-primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background .15s, transform .15s;
+  margin-top: .25rem;
+  &:hover { background: var(--clr-primary-hover); transform: translateY(-1px); }
+  &:focus-visible {
+    outline: 3px solid var(--clr-primary);
+    outline-offset: 3px;
+  }
+}
+
+// ── Carousel wrap ──────────────────────────────────────────────────────────
+.carousel-wrap {
+  position: relative;
+  padding: 0 0 3.5rem;
+  outline: none;
+
+  &:focus-visible {
+    outline: 3px solid var(--clr-primary);
+    outline-offset: 4px;
+    border-radius: 8px;
+  }
+}
+
+// ── Viewport (clips overflow) ──────────────────────────────────────────────
+.carousel-viewport {
+  overflow: hidden;
+  border-radius: 4px; // prevents edge pixel bleed on scroll
+}
+
+// ── Sliding track ──────────────────────────────────────────────────────────
+.carousel-track {
+  display: flex;
+  gap: $gap;
+  transition: transform 0.48s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+// ── Individual card ────────────────────────────────────────────────────────
+.carousel-card {
+  flex-shrink: 0;
+  background: #fff;
+  border: 1px solid var(--clr-border);
+  border-radius: $card-radius;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+  transition: box-shadow .28s ease, transform .28s ease;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,.10);
+    transform: translateY(-4px);
+  }
+
+  &:focus-within {
+    outline: 2px solid var(--clr-primary);
+    outline-offset: 2px;
+  }
+}
+
+// ── Card image ─────────────────────────────────────────────────────────────
+.card-img {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+  background: var(--clr-gray-100);
+
+  img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .5s ease;
+  }
+
+  &:hover img { transform: scale(1.06); }
+
+  &--placeholder {
+    background: var(--clr-gray-100);
+  }
+}
+
+.img-placeholder {
+  width: 100%; height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  font-weight: 800;
+  color: rgba(var(--clr-primary-rgb),.25);
+  text-transform: uppercase;
+  user-select: none;
+}
+
+// Category badge — overlaid on image bottom-left
+.cat-badge {
+  position: absolute;
+  bottom: .75rem;
+  left: .75rem;
+  font-size: .68rem;
+  font-weight: 700;
+  padding: .3rem .8rem;
+  border-radius: 999px;
+  background: rgba(10,14,26,.75);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  white-space: nowrap;
+  max-width: calc(100% - 1.5rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ── Card body ──────────────────────────────────────────────────────────────
+.card-body {
+  padding: 1.4rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .65rem;
+  flex: 1;
+}
+
+h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--clr-dark);
+  margin: 0;
+  line-height: 1.3;
+
+  // Clamp to 2 lines
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-desc {
+  color: var(--clr-text-sub);
+  font-size: .875rem;
+  line-height: 1.65;
+  margin: 0;
+  flex: 1;
+
+  // Clamp to 3 lines
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ── Tech tags ──────────────────────────────────────────────────────────────
+.tech-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+  margin-top: .1rem;
+}
+
+.tech-tag {
+  font-size: .7rem;
+  font-weight: 600;
+  padding: .2rem .6rem;
+  border-radius: 4px;
+  background: rgba(var(--clr-primary-rgb),.08);
+  color: var(--clr-primary);
+  border: 1px solid rgba(var(--clr-primary-rgb),.18);
+  white-space: nowrap;
+}
+
+.tech-more {
+  font-size: .7rem;
+  font-weight: 600;
+  color: var(--clr-text-muted);
+  padding: .2rem .4rem;
+  align-self: center;
+}
+
+// ── Card footer ────────────────────────────────────────────────────────────
+.card-footer {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-top: .25rem;
+  padding-top: .85rem;
+  border-top: 1px solid var(--clr-gray-100);
+}
+
+.btn-details {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .5rem 1.1rem;
+  background: var(--clr-primary);
+  color: #fff;
+  border-radius: 8px;
+  font-size: .82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background .15s, transform .15s;
+  flex-shrink: 0;
+
+  &:hover { background: var(--clr-primary-hover); transform: translateY(-1px); }
+  &:focus-visible {
+    outline: 3px solid var(--clr-primary);
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+}
+
+.btn-live {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .5rem 1rem;
+  background: transparent;
+  color: var(--clr-text-sub);
+  border: 1.5px solid var(--clr-border);
+  border-radius: 8px;
+  font-size: .82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all .15s;
+  flex-shrink: 0;
+
+  &:hover { color: var(--clr-primary); border-color: var(--clr-primary); }
+  &:focus-visible {
+    outline: 3px solid var(--clr-primary);
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+}
+
+// ── Arrows ─────────────────────────────────────────────────────────────────
+.arrow {
+  position: absolute;
+  top: calc(50% - 1.75rem); // account for dots height below
+  transform: translateY(-50%);
+  width: $arrow-size;
+  height: $arrow-size;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid var(--clr-border);
+  box-shadow: 0 4px 16px rgba(0,0,0,.10);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--clr-dark);
+  transition: background .2s, color .2s, border-color .2s, box-shadow .2s, transform .2s;
+  z-index: 10;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+  }
+
+  &:hover {
+    background: var(--clr-primary);
+    color: #fff;
+    border-color: var(--clr-primary);
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    transform: translateY(-50%) scale(1.05);
+  }
+
+  // Dim (not disable) at start/end — allows wrap-around
+  &--at-start { opacity: .5; }
+  &--at-end   { opacity: .5; }
+
+  &:focus-visible {
+    outline: 3px solid var(--clr-primary);
+    outline-offset: 3px;
+  }
+
+  &--prev { left: $arrow-offset; }
+  &--next { right: $arrow-offset; }
+
+  @media (max-width: 639px) {
+    display: none;
+  }
+}
+
+// ── Dots ───────────────────────────────────────────────────────────────────
+.dots {
+  position: absolute;
+  bottom: .75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+}
+
+.dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--clr-gray-300);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background .2s, width .25s cubic-bezier(.4,0,.2,1), border-radius .25s;
+
+  &--active {
+    background: var(--clr-primary);
+    width: 26px;
+    border-radius: 4px;
+  }
+
+  &:hover:not(.dot--active) {
+    background: var(--clr-gray-500);
+    transform: scale(1.2);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--clr-primary);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+// ── Responsive arrow offset ────────────────────────────────────────────────
+// On smaller screens where the carousel is full-width, pull arrows inside
+@media (max-width: 900px) {
+  .arrow--prev { left: .5rem; }
+  .arrow--next { right: .5rem; }
+  .carousel-wrap { padding-left: 0; padding-right: 0; }
+}

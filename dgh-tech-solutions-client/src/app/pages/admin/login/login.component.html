@@ -1,0 +1,89 @@
+<div class="login-page">
+  <div class="login-card">
+
+    <!-- Brand -->
+    <div class="login-brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="36" height="36" rx="10" fill="#2563eb"/>
+          <path d="M11 11h6.5c3.866 0 7 3.134 7 7s-3.134 7-7 7H11V11z" fill="#fff"/>
+          <rect x="11" y="17.5" width="10" height="2" rx="1" fill="#93c5fd"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">DGH</span><span class="brand-sub"> Admin</span>
+      </div>
+    </div>
+
+    <div class="login-heading">
+      <h1>Welcome back</h1>
+      <p>Sign in to access the DGH Tech Solutions admin panel.</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate aria-label="Admin sign in">
+
+      <div class="form-group">
+        <label for="admin-email">Email address</label>
+        <input
+          id="admin-email"
+          type="email"
+          formControlName="email"
+          class="form-control"
+          [class.is-invalid]="form.get('email')?.invalid && form.get('email')?.touched"
+          placeholder="Email address"
+          autocomplete="email"
+          aria-required="true"
+          [attr.aria-invalid]="(form.get('email')?.invalid && form.get('email')?.touched) || null"
+          aria-describedby="email-err"
+        />
+        @if (form.get('email')?.touched) {
+          @if (form.get('email')?.hasError('required')) {
+            <span class="field-error" id="email-err" role="alert">Email address is required.</span>
+          } @else if (form.get('email')?.hasError('email')) {
+            <span class="field-error" id="email-err" role="alert">Enter a valid email address.</span>
+          }
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="admin-password">Password</label>
+        <div class="input-wrap">
+          <input
+            id="admin-password"
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            class="form-control"
+            [class.is-invalid]="form.get('password')?.invalid && form.get('password')?.touched"
+            placeholder="Password"
+            autocomplete="current-password"
+            aria-required="true"
+            [attr.aria-invalid]="(form.get('password')?.invalid && form.get('password')?.touched) || null"
+            aria-describedby="pw-err"
+          />
+          <button type="button" class="toggle-pw" (click)="togglePassword()"
+                  [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+            {{ showPassword ? '&#128065;' : '&#128274;' }}
+          </button>
+        </div>
+        @if (form.get('password')?.touched && form.get('password')?.hasError('required')) {
+          <span class="field-error" id="pw-err" role="alert">Password is required.</span>
+        }
+      </div>
+
+      @if (errorMsg()) {
+        <div class="alert-error" role="alert">{{ errorMsg() }}</div>
+      }
+
+      <button type="submit" class="btn-signin" [disabled]="loading()" [attr.aria-busy]="loading()">
+        @if (loading()) {
+          <span class="btn-spinner" aria-hidden="true"></span> Signing in…
+        } @else {
+          Sign In
+        }
+      </button>
+
+    </form>
+
+    <p class="login-footer">DGH Tech Solutions &mdash; Admin Portal</p>
+  </div>
+</div>

@@ -1,0 +1,198 @@
+// ── Page wrapper ──────────────────────────────────────────────────────────────
+.login-page {
+  min-height: 100vh;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+// ── Card ──────────────────────────────────────────────────────────────────────
+.login-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 2.75rem 2.5rem 2.25rem;
+  width: 100%;
+  max-width: 440px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px rgba(0,0,0,.04), 0 16px 48px rgba(0,0,0,.08);
+
+  @media (max-width: 480px) { padding: 2rem 1.5rem 1.75rem; }
+}
+
+// ── Brand ─────────────────────────────────────────────────────────────────────
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: 2rem;
+}
+
+.brand-mark svg {
+  width: 36px;
+  height: 36px;
+  display: block;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(37,99,235,.25);
+}
+
+.brand-text { line-height: 1; }
+.brand-name { font-size: 1.1rem; font-weight: 700; color: #111827; letter-spacing: -.02em; }
+.brand-sub  { font-size: 1.1rem; font-weight: 500; color: #6b7280; letter-spacing: -.01em; }
+
+// ── Heading ───────────────────────────────────────────────────────────────────
+.login-heading {
+  margin-bottom: 1.75rem;
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    letter-spacing: -.025em;
+    line-height: 1.2;
+    margin: 0 0 .4rem;
+  }
+
+  p {
+    font-size: .875rem;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.55;
+  }
+}
+
+// ── Form elements ─────────────────────────────────────────────────────────────
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+label {
+  display: block;
+  font-size: .8rem;
+  font-weight: 600;
+  color: #374151;
+  letter-spacing: .01em;
+  margin-bottom: .4rem;
+  text-transform: uppercase;
+}
+
+.form-control {
+  width: 100%;
+  padding: .72rem 1rem;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: .925rem;
+  color: #111827;
+  background: #fff;
+  font-family: inherit;
+  transition: border-color .18s, box-shadow .18s;
+  outline: none;
+
+  &::placeholder { color: #9ca3af; }
+
+  &:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+  }
+
+  &.is-invalid {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220,38,38,.1);
+  }
+}
+
+// Password field with toggle
+.input-wrap {
+  position: relative;
+
+  .form-control { padding-right: 2.75rem; }
+}
+
+.toggle-pw {
+  position: absolute;
+  right: .75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #9ca3af;
+  padding: .2rem;
+  line-height: 1;
+  transition: color .15s;
+
+  &:hover { color: #374151; }
+}
+
+// ── Validation ────────────────────────────────────────────────────────────────
+.field-error {
+  display: block;
+  font-size: .775rem;
+  color: #dc2626;
+  margin-top: .3rem;
+}
+
+.alert-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: .8rem 1rem;
+  border-radius: 8px;
+  font-size: .875rem;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+// ── Submit button ─────────────────────────────────────────────────────────────
+.btn-signin {
+  width: 100%;
+  padding: .85rem 2rem;
+  background: #2563eb;
+  color: #fff;
+  font-size: .95rem;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .6rem;
+  transition: background .2s, transform .15s, box-shadow .2s;
+  margin-top: .5rem;
+
+  &:hover:not(:disabled) {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(37,99,235,.3);
+  }
+
+  &:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+  }
+}
+
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .65s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+.login-footer {
+  text-align: center;
+  font-size: .775rem;
+  color: #9ca3af;
+  margin: 1.5rem 0 0;
+}

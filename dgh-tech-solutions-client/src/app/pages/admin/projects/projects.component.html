@@ -1,0 +1,86 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h1>Projects</h1>
+      <p class="page-sub">{{ projects().length }} project{{ projects().length !== 1 ? 's' : '' }} total</p>
+    </div>
+    <button class="btn btn-primary" (click)="openNew()">+ New Project</button>
+  </div>
+
+  @if (errorMsg()) {
+    <div class="alert alert--error" style="margin-bottom:1rem;">{{ errorMsg() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="loading-row">
+      <div class="spinner"></div>
+      <span>Loading projects...</span>
+    </div>
+  } @else if (projects().length === 0) {
+    <div class="empty-panel">
+      <div class="empty-icon">◧</div>
+      <p class="empty-title">No projects yet</p>
+      <p class="empty-text">Add your first project to showcase your work.</p>
+      <button class="btn btn-primary" (click)="openNew()">+ Add Project</button>
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Project</th>
+            <th>Category</th>
+            <th>Tech Stack</th>
+            <th>Featured</th>
+            <th>Status</th>
+            <th>Order</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of projects(); track p._id) {
+            <tr>
+              <td>
+                <div class="project-cell">
+                  @if (p.imageUrl) {
+                    <img [src]="p.imageUrl" [alt]="p.title" class="project-thumb" />
+                  }
+                  <div>
+                    <div class="project-title">{{ p.title }}</div>
+                    <div class="project-desc">{{ p.shortDescription | slice:0:60 }}{{ p.shortDescription.length > 60 ? '…' : '' }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>{{ p.category || '—' }}</td>
+              <td>
+                <div class="tags">
+                  @for (t of (p.techStack ?? []).slice(0, 3); track t) {
+                    <span class="tag">{{ t }}</span>
+                  }
+                  @if ((p.techStack?.length ?? 0) > 3) {
+                    <span class="tag-more">+{{ (p.techStack?.length ?? 0) - 3 }}</span>
+                  }
+                </div>
+              </td>
+              <td>
+                <button class="toggle-btn" [class.active]="p.isFeatured" (click)="toggleFeatured(p)" [title]="p.isFeatured ? 'Remove from featured' : 'Mark as featured'">
+                  {{ p.isFeatured ? '★' : '☆' }}
+                </button>
+              </td>
+              <td>
+                <button class="status-toggle" [class.published]="p.isPublished" (click)="togglePublish(p)">
+                  {{ p.isPublished ? 'Published' : 'Draft' }}
+                </button>
+              </td>
+              <td class="order-cell">{{ p.sortOrder ?? 0 }}</td>
+              <td class="actions-cell">
+                <button class="btn-icon" (click)="openEdit(p)" title="Edit project">&#9998;</button>
+                <button class="btn-icon danger" (click)="delete(p._id!)" title="Delete project">&#10005;</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

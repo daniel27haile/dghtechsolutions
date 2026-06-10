@@ -1,0 +1,86 @@
+.admin-page { max-width: 1200px; }
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.75rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -.01em; color: var(--clr-dark); margin: 0 0 .2rem; }
+.page-sub { font-size: .8rem; color: var(--clr-text-muted); margin: 0; }
+
+// ── Loading & empty ───────────────────────────────────────────────────────────
+.loading-row {
+  display: flex; align-items: center; gap: .75rem;
+  padding: 3rem 0; color: var(--clr-text-muted); font-size: .9rem;
+}
+
+.empty-panel {
+  background: #fff;
+  border: 2px dashed var(--clr-border);
+  border-radius: 12px;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+.empty-icon  { font-size: 2.5rem; margin-bottom: 1rem; opacity: .3; }
+.empty-title { font-size: 1.1rem; font-weight: 700; color: var(--clr-dark); margin: 0 0 .5rem; }
+.empty-text  { font-size: .875rem; color: var(--clr-text-muted); margin: 0 0 1.5rem; }
+
+// ── Table overrides ───────────────────────────────────────────────────────────
+.table-wrap {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+  overflow: hidden;
+}
+
+// ── Project cell ──────────────────────────────────────────────────────────────
+.project-cell { display: flex; align-items: center; gap: .75rem; }
+.project-thumb {
+  width: 40px; height: 40px; border-radius: 6px;
+  object-fit: cover; flex-shrink: 0;
+}
+.project-title { font-size: .875rem; font-weight: 600; color: var(--clr-dark); }
+.project-desc  { font-size: .75rem; color: var(--clr-text-muted); margin-top: .15rem; }
+
+// ── Tags ──────────────────────────────────────────────────────────────────────
+.tags { display: flex; flex-wrap: wrap; gap: .3rem; }
+.tag {
+  font-size: .68rem; font-weight: 600;
+  background: rgba(var(--clr-primary-rgb),.08); color: var(--clr-primary);
+  padding: .15rem .5rem; border-radius: 4px;
+}
+.tag-more { font-size: .68rem; color: var(--clr-text-muted); }
+
+// ── Toggle buttons ────────────────────────────────────────────────────────────
+.toggle-btn {
+  background: none; border: none; font-size: 1.1rem;
+  color: var(--clr-gray-300); cursor: pointer;
+  transition: color .15s;
+  &.active { color: #f59e0b; }
+  &:hover  { color: #f59e0b; }
+}
+
+.status-toggle {
+  font-size: .72rem; font-weight: 700; padding: .25rem .7rem;
+  border-radius: 999px; border: none; cursor: pointer;
+  background: var(--clr-gray-100); color: var(--clr-text-muted);
+  transition: all .15s;
+  &.published { background: rgba(16,185,129,.12); color: #065f46; }
+  &:hover { opacity: .8; }
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+.order-cell { color: var(--clr-text-muted) !important; font-size: .8rem; }
+.actions-cell { display: flex; gap: .4rem; }
+.btn-icon {
+  background: none; border: 1px solid var(--clr-border);
+  border-radius: 6px; padding: .3rem .55rem;
+  cursor: pointer; font-size: .9rem; color: var(--clr-text);
+  transition: all .15s;
+  &:hover { border-color: var(--clr-primary); color: var(--clr-primary); }
+  &.danger:hover { border-color: var(--clr-danger); color: var(--clr-danger); }
+}

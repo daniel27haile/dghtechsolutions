@@ -1,0 +1,104 @@
+<div class="dashboard">
+  <div class="page-header">
+    <div>
+      <h1>Dashboard</h1>
+      <p class="page-sub">Welcome back — here's what's happening.</p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/admin/projects/new" class="btn-action">+ New Project</a>
+      <a routerLink="/admin/messages" class="btn-action secondary">
+        Messages
+        @if (newMsgCount() > 0) {
+          <span class="badge-count">{{ newMsgCount() }}</span>
+        }
+      </a>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <span>Loading dashboard...</span>
+    </div>
+  } @else if (error()) {
+    <div class="error-state">Failed to load dashboard data. Please refresh.</div>
+  } @else {
+    <!-- ── Stat Cards ─────────────────────────────────────────────────── -->
+    <div class="stat-grid">
+      <app-stat-card
+        label="Total Visits"
+        [value]="analytics()?.total ?? 0"
+        icon="👁"
+        accent="primary" />
+      <app-stat-card
+        label="This Week"
+        [value]="analytics()?.weekly ?? 0"
+        icon="📅"
+        accent="info" />
+      <app-stat-card
+        label="This Month"
+        [value]="analytics()?.monthly ?? 0"
+        icon="📆"
+        accent="success" />
+      <app-stat-card
+        label="This Year"
+        [value]="analytics()?.yearly ?? 0"
+        icon="🗓"
+        accent="warning" />
+      <app-stat-card
+        label="Total Projects"
+        [value]="projects().length"
+        icon="◧"
+        accent="purple"
+        [sublabel]="publishedCount() + ' published'" />
+      <app-stat-card
+        label="Total Messages"
+        [value]="messages().length"
+        icon="◎"
+        accent="danger"
+        [sublabel]="newMsgCount() + ' unread'" />
+    </div>
+
+    <!-- ── Charts row ──────────────────────────────────────────────────── -->
+    <div class="panels-row">
+      <div class="panel-col panel-col--wide">
+        <app-recent-visits [daily]="analytics()?.daily ?? []" />
+      </div>
+      <div class="panel-col">
+        <app-top-pages [pages]="analytics()?.topPages ?? []" />
+      </div>
+    </div>
+
+    <!-- ── Data row ────────────────────────────────────────────────────── -->
+    <div class="panels-row">
+      <div class="panel-col panel-col--wide">
+        <app-recent-messages [messages]="recentMessages()" />
+      </div>
+      <div class="panel-col">
+        <!-- Device Breakdown -->
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Devices</h3>
+            <span class="sub">Last 30 days</span>
+          </div>
+          @if ((analytics()?.devices?.length ?? 0) === 0) {
+            <p class="empty">No device data yet.</p>
+          } @else {
+            <div class="device-list">
+              @for (d of analytics()!.devices; track d.device) {
+                <div class="device-row">
+                  <span class="device-name">{{ d.device || 'Unknown' }}</span>
+                  <div class="device-bar-wrap">
+                    <div class="device-bar"
+                      [style.width.%]="getDeviceWidth(d.count)"></div>
+                  </div>
+                  <span class="device-count">{{ d.count }}</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

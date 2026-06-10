@@ -1,0 +1,76 @@
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="grid">
+      <div class="brand">
+        <a routerLink="/" class="footer-logo-link">
+          <img
+            class="footer-logo-img"
+            ngSrc="assets/images/footer_logo.PNG"
+            width="198"
+            height="132"
+            alt="{{ (settings()?.logoText || 'DGH Tech Solutions') + ' logo' }}"
+            loading="lazy"
+          />
+        </a>
+        <p>{{ footerContent()?.body || settings()?.metaDescription || 'Professional web development, mobile apps, and cloud services.' }}</p>
+        @if (settings()?.socialLinks?.linkedin || settings()?.socialLinks?.github || settings()?.socialLinks?.twitter || settings()?.socialLinks?.instagram || settings()?.socialLinks?.facebook || settings()?.socialLinks?.youtube) {
+          <div class="social-links">
+            @if (settings()?.socialLinks?.linkedin) {
+              <a [href]="settings()!.socialLinks.linkedin" target="_blank" rel="noopener noreferrer"
+                 aria-label="LinkedIn profile (opens in new tab)">in</a>
+            }
+            @if (settings()?.socialLinks?.github) {
+              <a [href]="settings()!.socialLinks.github" target="_blank" rel="noopener noreferrer"
+                 aria-label="GitHub profile (opens in new tab)">gh</a>
+            }
+            @if (settings()?.socialLinks?.twitter) {
+              <a [href]="settings()!.socialLinks.twitter" target="_blank" rel="noopener noreferrer"
+                 aria-label="Twitter/X profile (opens in new tab)">X</a>
+            }
+            @if (settings()?.socialLinks?.instagram) {
+              <a [href]="settings()!.socialLinks.instagram" target="_blank" rel="noopener noreferrer"
+                 aria-label="Instagram profile (opens in new tab)">ig</a>
+            }
+            @if (settings()?.socialLinks?.facebook) {
+              <a [href]="settings()!.socialLinks.facebook" target="_blank" rel="noopener noreferrer"
+                 aria-label="Facebook page (opens in new tab)">fb</a>
+            }
+            @if (settings()?.socialLinks?.youtube) {
+              <a [href]="settings()!.socialLinks.youtube" target="_blank" rel="noopener noreferrer"
+                 aria-label="YouTube channel (opens in new tab)">yt</a>
+            }
+          </div>
+        }
+      </div>
+
+      <nav aria-label="Company links">
+        <h4>Company</h4>
+        <ul>
+          <li><a routerLink="/">Home</a></li>
+          <li><a routerLink="/services">Services</a></li>
+          <li><a routerLink="/about">About</a></li>
+          <li><a routerLink="/contact">Contact</a></li>
+        </ul>
+      </nav>
+
+      <nav aria-label="Legal links">
+        <h4>Legal</h4>
+        <ul>
+          <li><a routerLink="/privacy-policy">Privacy Policy</a></li>
+          <li><a routerLink="/terms">Terms of Service</a></li>
+        </ul>
+      </nav>
+
+      <div class="contact-info">
+        <h4>Contact</h4>
+        @if (settings()?.email) { <p>{{ settings()!.email }}</p> }
+        @if (settings()?.phone) { <p>{{ settings()!.phone }}</p> }
+        @if (settings()?.location) { <p>{{ settings()!.location }}</p> }
+      </div>
+    </div>
+
+    <div class="bottom">
+      <p>{{ settings()?.footerText || '© ' + year + ' DGH Tech Solutions. All rights reserved.' }}</p>
+    </div>
+  </div>
+</footer>

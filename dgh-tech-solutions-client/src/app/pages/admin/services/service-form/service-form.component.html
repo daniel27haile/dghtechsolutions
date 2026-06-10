@@ -1,0 +1,130 @@
+<div class="form-page">
+
+  <div class="page-header">
+    <button class="back-btn" (click)="back()" type="button">&#8592; Services</button>
+    <div class="header-title">
+      <h1>{{ serviceId() ? 'Edit Service' : 'New Service' }}</h1>
+      <p class="page-sub">{{ serviceId() ? 'Update service details below.' : 'Fill in the details to add a new service.' }}</p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-row">
+      <div class="spinner"></div>
+      <span>Loading service...</span>
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="form-layout">
+
+        <!-- Main content -->
+        <div class="form-main">
+          <div class="card">
+            <h2 class="card-title">Service Details</h2>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="title">Title <span class="req">*</span></label>
+                <input id="title" formControlName="title" class="form-control"
+                       [class.is-invalid]="invalid('title')"
+                       placeholder="e.g. Full-Stack Development" />
+                @if (err('title', 'required')) {
+                  <span class="form-error">Title is required.</span>
+                } @else if (err('title', 'minlength')) {
+                  <span class="form-error">Title must be at least 2 characters.</span>
+                } @else if (err('title', 'maxlength')) {
+                  <span class="form-error">Title cannot exceed 100 characters.</span>
+                }
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="icon">Icon (emoji)</label>
+                <input id="icon" formControlName="icon" class="form-control"
+                       placeholder="🚀" maxlength="4" />
+                <span class="form-hint">Paste an emoji or leave blank.</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="shortDesc">Short Description <span class="req">*</span></label>
+              <input id="shortDesc" formControlName="shortDescription" class="form-control"
+                     [class.is-invalid]="invalid('shortDescription')"
+                     placeholder="A brief one-line summary of this service" />
+              @if (err('shortDescription', 'required')) {
+                <span class="form-error">Short description is required.</span>
+              } @else if (err('shortDescription', 'minlength')) {
+                <span class="form-error">Short description must be at least 10 characters.</span>
+              } @else if (err('shortDescription', 'maxlength')) {
+                <span class="form-error">Short description cannot exceed 200 characters.</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="fullDesc">Full Description</label>
+              <textarea id="fullDesc" formControlName="fullDescription" class="form-control"
+                        rows="6" placeholder="Detailed description of what this service includes..."></textarea>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Media</h2>
+            <div class="form-group">
+              <label class="form-label" for="imageUrl">Service Image URL</label>
+              <input id="imageUrl" formControlName="imageUrl" class="form-control"
+                     placeholder="https://example.com/service-image.jpg" />
+              @if (imagePreview()) {
+                <div class="img-preview">
+                  <img [src]="imagePreview()" alt="Service image preview"
+                       (error)="imagePreview.set('')" />
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="form-sidebar">
+          <div class="card">
+            <h2 class="card-title">Visibility</h2>
+
+            <label class="form-check">
+              <input type="checkbox" formControlName="published" />
+              <span>Published</span>
+            </label>
+            <p class="check-hint">Published services appear on the services page.</p>
+
+            <label class="form-check mt-check">
+              <input type="checkbox" formControlName="featured" />
+              <span>Featured</span>
+            </label>
+            <p class="check-hint">Featured services appear on the homepage.</p>
+
+            <div class="form-group mt-group">
+              <label class="form-label" for="order">Display Order</label>
+              <input id="order" type="number" formControlName="displayOrder" class="form-control"
+                     [class.is-invalid]="invalid('displayOrder')"
+                     min="0" max="999" />
+              @if (err('displayOrder', 'min')) {
+                <span class="form-error">Order must be 0 or greater.</span>
+              }
+              <span class="form-hint">Lower numbers appear first.</span>
+            </div>
+          </div>
+
+          <div class="card form-actions">
+            @if (errorMsg()) {
+              <div class="alert alert--error">{{ errorMsg() }}</div>
+            }
+            <button type="submit" class="btn btn-primary w-full" [disabled]="saving()">
+              @if (saving()) { Saving… } @else { {{ serviceId() ? 'Update Service' : 'Create Service' }} }
+            </button>
+            <button type="button" class="btn btn-ghost w-full mt-btn" (click)="back()">
+              Cancel
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </form>
+  }
+
+</div>

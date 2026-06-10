@@ -1,0 +1,63 @@
+<div class="admin-shell" [class.sidebar-collapsed]="!sidebarOpen()" [class.mobile-open]="mobileOpen()">
+
+  <!-- Mobile overlay -->
+  <div class="mobile-overlay" (click)="closeMobile()"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      @if (sidebarOpen()) {
+        <span class="brand">DGH<span class="brand-accent"> Admin</span></span>
+      }
+      <button class="toggle-btn desktop-toggle" (click)="toggleSidebar()" aria-label="Toggle sidebar">
+        {{ sidebarOpen() ? '&#8249;' : '&#8250;' }}
+      </button>
+      <button class="toggle-btn mobile-close" (click)="closeMobile()" aria-label="Close menu">&#215;</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      @for (link of navLinks; track link.path) {
+        <a [routerLink]="link.path" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
+          <span class="nav-icon">{{ link.icon }}</span>
+          @if (sidebarOpen()) {
+            <span class="nav-label">{{ link.label }}</span>
+          }
+        </a>
+      }
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="/" target="_blank" rel="noopener" class="nav-item">
+        <span class="nav-icon">&#8599;</span>
+        @if (sidebarOpen()) { <span class="nav-label">View Site</span> }
+      </a>
+      <button class="nav-item logout-btn" (click)="logout()">
+        <span class="nav-icon">&#8594;</span>
+        @if (sidebarOpen()) { <span class="nav-label">Logout</span> }
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <div class="main-area">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" (click)="openMobile()" aria-label="Open menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+      <div class="topbar-right">
+        <div class="admin-chip">
+          <div class="admin-avatar">{{ auth.currentAdmin()?.name?.[0]?.toUpperCase() || 'A' }}</div>
+          <span class="admin-name">{{ auth.currentAdmin()?.name || 'Admin' }}</span>
+        </div>
+        <button class="topbar-logout" (click)="logout()" title="Logout">&#8594;</button>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <router-outlet />
+    </div>
+  </div>
+
+</div>

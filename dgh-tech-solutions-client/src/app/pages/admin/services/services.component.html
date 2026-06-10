@@ -1,0 +1,77 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h1>Services</h1>
+      <p class="page-sub">{{ services().length }} service{{ services().length !== 1 ? 's' : '' }} total</p>
+    </div>
+    <button class="btn btn-primary" (click)="openNew()">+ New Service</button>
+  </div>
+
+  @if (errorMsg()) {
+    <div class="alert alert--error" style="margin-bottom:1rem;">{{ errorMsg() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="loading-row">
+      <div class="spinner"></div>
+      <span>Loading services...</span>
+    </div>
+  } @else if (services().length === 0) {
+    <div class="empty-panel">
+      <div class="empty-icon">◉</div>
+      <p class="empty-title">No services yet</p>
+      <p class="empty-text">Add your first service to showcase what you offer.</p>
+      <button class="btn btn-primary" (click)="openNew()">+ Add Service</button>
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Icon</th>
+            <th>Featured</th>
+            <th>Status</th>
+            <th>Order</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of services(); track s._id) {
+            <tr>
+              <td>
+                <div class="service-cell">
+                  <div class="service-title">{{ s.title }}</div>
+                  <div class="service-desc">{{ s.shortDescription | slice:0:60 }}{{ s.shortDescription.length > 60 ? '…' : '' }}</div>
+                </div>
+              </td>
+              <td>
+                @if (s.icon) {
+                  <span class="icon-cell">{{ s.icon }}</span>
+                } @else {
+                  <span class="no-icon">—</span>
+                }
+              </td>
+              <td>
+                <button class="toggle-btn" [class.active]="s.isFeatured" (click)="toggleFeatured(s)"
+                        [title]="s.isFeatured ? 'Remove from featured' : 'Mark as featured'">
+                  {{ s.isFeatured ? '★' : '☆' }}
+                </button>
+              </td>
+              <td>
+                <button class="status-toggle" [class.published]="s.isPublished" (click)="togglePublish(s)">
+                  {{ s.isPublished ? 'Published' : 'Draft' }}
+                </button>
+              </td>
+              <td class="order-cell">{{ s.sortOrder ?? 0 }}</td>
+              <td class="actions-cell">
+                <button class="btn-icon" (click)="openEdit(s)" title="Edit service">&#9998;</button>
+                <button class="btn-icon danger" (click)="delete(s._id!)" title="Delete service">&#10005;</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
