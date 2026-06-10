@@ -3,3 +3,5 @@ dist/
 .angular/
 *.local
 .env
+README.md
+
