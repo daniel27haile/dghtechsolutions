@@ -99,4 +99,34 @@ const changePassword = async (req, res, next) => {
   }
 };
 
-module.exports = { login, getMe, changePassword };
+/**
+ * PATCH /api/auth/profile
+ * Update the authenticated admin's display name.
+ */
+const updateProfile = async (req, res, next) => {
+  try {
+    const { displayName } = req.body;
+    if (!displayName || !String(displayName).trim()) {
+      return res.status(400).json({ success: false, message: 'Display name is required' });
+    }
+    const admin = await AdminUser.findByIdAndUpdate(
+      req.admin._id,
+      { fullName: String(displayName).trim() },
+      { new: true, runValidators: true }
+    );
+    res.json({
+      success: true,
+      admin: {
+        id: admin._id,
+        username: admin.username,
+        email: admin.email,
+        fullName: admin.fullName,
+        role: admin.role,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { login, getMe, changePassword, updateProfile };

@@ -1,0 +1,621 @@
+<div class="admin-page">
+
+  <!-- ─── Page Header ─────────────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <button class="back-btn" (click)="back()">&#8592; Resources</button>
+      <h1>{{ isEditing() ? 'Edit Resource' : 'New Resource' }}</h1>
+    </div>
+    <button class="btn btn-primary" (click)="save()" [disabled]="saving()">
+      {{ saving() ? 'Saving…' : (isEditing() ? 'Save Changes' : 'Create Resource') }}
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-row"><div class="spinner"></div><span>Loading resource...</span></div>
+  } @else {
+
+    @if (errorMsg()) {
+      <div class="alert alert--error" style="margin-bottom:1.25rem;">{{ errorMsg() }}</div>
+    }
+    @if (successMsg()) {
+      <div class="alert alert--success" style="margin-bottom:1.25rem;">{{ successMsg() }}</div>
+    }
+
+    <!-- ─── Resource Info Form ─────────────────────────────────────────────── -->
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="form-grid">
+
+        <!-- Left column -->
+        <div class="form-col">
+          <div class="form-card">
+            <h2 class="card-heading">Basic Info</h2>
+
+            <div class="form-group">
+              <label class="form-label" for="f-title">Title <span class="required">*</span></label>
+              <input id="f-title" type="text" class="form-control" formControlName="title"
+                     placeholder="e.g. AWS Solutions Architect Interview Questions" />
+              @if (err('title', 'required'))    { <span class="form-error">Title is required.</span> }
+              @if (err('title', 'minlength'))   { <span class="form-error">At least 2 characters.</span> }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="f-desc">Description <span class="required">*</span></label>
+              <textarea id="f-desc" class="form-control" formControlName="description"
+                        placeholder="A short description of what this resource covers..." rows="4"></textarea>
+              @if (err('description', 'required'))  { <span class="form-error">Description is required.</span> }
+              @if (err('description', 'minlength')) { <span class="form-error">At least 10 characters.</span> }
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="f-cat">Category <span class="required">*</span></label>
+                <select id="f-cat" class="form-control" formControlName="category">
+                  <option value="">Select category…</option>
+                  @for (c of categories; track c) {
+                    <option [value]="c">{{ c }}</option>
+                  }
+                </select>
+                @if (err('category', 'required')) { <span class="form-error">Category is required.</span> }
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="f-type">Type <span class="required">*</span></label>
+                <select id="f-type" class="form-control" formControlName="type">
+                  <option value="">Select type…</option>
+                  @for (t of types; track t.value) {
+                    <option [value]="t.value">{{ t.label }}</option>
+                  }
+                </select>
+                @if (err('type', 'required')) { <span class="form-error">Type is required.</span> }
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="f-level">Difficulty Level</label>
+              <select id="f-level" class="form-control" formControlName="level">
+                @for (lv of levels; track lv) {
+                  <option [value]="lv">{{ lv }}</option>
+                }
+              </select>
+              @if (isPhased) {
+                <span class="form-hint">&#9888; Phased content: questions/cards can be assigned to Phase 1 or Phase 2.</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Thumbnail</label>
+              <div class="upload-row">
+                <input #thumbFileInput type="file" accept="image/jpeg,image/png,image/webp"
+                       class="upload-file-input" (change)="onThumbnailSelected($event)" />
+                <button type="button" class="btn-upload" (click)="thumbFileInput.click()" [disabled]="uploadingThumb()">
+                  {{ uploadingThumb() ? 'Uploading…' : '&#128247; Upload Image' }}
+                </button>
+                @if (uploadThumbError()) {
+                  <span class="upload-error">{{ uploadThumbError() }}</span>
+                }
+              </div>
+              <input id="f-thumb" type="url" class="form-control" formControlName="thumbnailUrl"
+                     placeholder="Or paste a hosted image URL…" style="margin-top:.5rem;" />
+              <span class="form-hint">Upload (JPEG/PNG/WebP, max 5 MB) or paste a URL.</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="f-tags">Tags</label>
+              <input id="f-tags" type="text" class="form-control" formControlName="tags"
+                     placeholder="aws, cloud, interview (comma separated)" />
+            </div>
+          </div>
+
+          <!-- Bundle resource picker -->
+          @if (showBundlePicker()) {
+            <div class="form-card">
+              <h2 class="card-heading">Included Resources</h2>
+              <p class="form-hint" style="margin-bottom:1rem;">
+                Select the resources that will be unlocked when a user purchases this bundle.
+                Bundles cannot be nested inside other bundles.
+              </p>
+              @if (loadingResources()) {
+                <div class="loading-row"><div class="spinner"></div><span>Loading resources…</span></div>
+              } @else if (allResources().length === 0) {
+                <p class="form-hint">No non-bundle resources found. Create some resources first.</p>
+              } @else {
+                <div class="bundle-picker">
+                  @for (res of allResources(); track res._id) {
+                    <label class="bundle-item" [class.bundle-item--selected]="isBundleSelected(res._id!)">
+                      <input
+                        type="checkbox"
+                        [checked]="isBundleSelected(res._id!)"
+                        (change)="toggleBundleResource(res._id!)"
+                      />
+                      <span class="bundle-item-icon">
+                        {{ res.type === 'PDF' ? '&#128196;' : res.type === 'MULTIPLE_CHOICE' ? '&#10003;' : '&#128276;' }}
+                      </span>
+                      <span class="bundle-item-info">
+                        <span class="bundle-item-title">{{ res.title }}</span>
+                        <span class="bundle-item-meta">{{ res.type }} &bull; {{ res.isPaid ? ('$' + res.price) : 'Free' }}</span>
+                      </span>
+                    </label>
+                  }
+                </div>
+                <p class="form-hint" style="margin-top:.75rem;">
+                  {{ bundleIncluded().size }} resource{{ bundleIncluded().size !== 1 ? 's' : '' }} selected
+                </p>
+              }
+            </div>
+          }
+
+          <!-- PDF-specific fields -->
+          @if (currentType() === 'PDF') {
+            <div class="form-card">
+              <h2 class="card-heading">PDF Settings</h2>
+              <div class="form-group">
+                <label class="form-label">PDF File</label>
+                <div class="upload-row">
+                  <input #pdfFileInput type="file" accept="application/pdf"
+                         class="upload-file-input" (change)="onPdfSelected($event)" />
+                  <button type="button" class="btn-upload" (click)="pdfFileInput.click()" [disabled]="uploadingPdf()">
+                    {{ uploadingPdf() ? 'Uploading…' : '&#128196; Upload PDF' }}
+                  </button>
+                  @if (uploadPdfError()) {
+                    <span class="upload-error">{{ uploadPdfError() }}</span>
+                  }
+                </div>
+                <input id="f-pdf" type="text" class="form-control" formControlName="pdfUrl"
+                       placeholder="S3 key (set automatically after upload)" style="margin-top:.5rem;" readonly />
+                <span class="form-hint">Upload a PDF (max 50 MB). The S3 key is stored automatically.</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="f-preview">Free Preview Pages</label>
+                <input id="f-preview" type="number" class="form-control" formControlName="previewPageLimit"
+                       min="0" />
+                <span class="form-hint">Number of pages visible before a paywall is shown.</span>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Right column -->
+        <div class="form-col form-col--aside">
+
+          <!-- Publishing -->
+          <div class="form-card">
+            <h2 class="card-heading">Publishing</h2>
+            <div class="form-check" style="margin-bottom:.85rem;">
+              <input type="checkbox" id="f-published" formControlName="isPublished" />
+              <label for="f-published">Published (visible to users)</label>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="f-order">Display Order</label>
+              <input id="f-order" type="number" class="form-control" formControlName="displayOrder" min="0" />
+            </div>
+          </div>
+
+          <!-- Pricing -->
+          <div class="form-card">
+            <h2 class="card-heading">Pricing</h2>
+
+            <div class="form-check pricing-free-toggle">
+              <input type="checkbox" id="f-is-free" formControlName="pricingIsFree" />
+              <label for="f-is-free">This resource is free</label>
+            </div>
+
+            @if (!form.get('pricingIsFree')?.value) {
+              <div class="form-group">
+                <label class="form-label" for="f-currency">Currency</label>
+                <select id="f-currency" class="form-control" formControlName="pricingCurrency">
+                  <option value="USD">USD ($)</option>
+                  <option value="EUR">EUR (€)</option>
+                  <option value="GBP">GBP (£)</option>
+                </select>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="f-sale-price">
+                    Sale Price <span class="required">*</span>
+                  </label>
+                  <input id="f-sale-price" type="number" class="form-control"
+                         formControlName="pricingSalePrice" min="0" step="0.01"
+                         placeholder="e.g. 10.99" />
+                  <span class="form-hint">Current price shown to users.</span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="f-old-price">Old Price</label>
+                  <input id="f-old-price" type="number" class="form-control"
+                         formControlName="pricingOldPrice" min="0" step="0.01"
+                         placeholder="e.g. 30.00" />
+                  <span class="form-hint">Shown with strikethrough if higher.</span>
+                </div>
+              </div>
+
+              <div class="form-check" style="margin-bottom:.65rem;">
+                <input type="checkbox" id="f-auto-calc" formControlName="pricingAutoCalc" />
+                <label for="f-auto-calc">Auto-calculate discount %</label>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="f-disc-pct">Discount %</label>
+                <input id="f-disc-pct" type="number" class="form-control"
+                       formControlName="pricingDiscPct" min="0" max="100" step="1"
+                       [attr.readonly]="form.get('pricingAutoCalc')?.value ? '' : null" />
+                @if (form.get('pricingAutoCalc')?.value) {
+                  <span class="form-hint">Auto-calculated from old and sale prices.</span>
+                }
+              </div>
+
+              <div class="pricing-preview">
+                <span class="pricing-preview__label">Preview:</span>
+                <span class="pricing-preview__value">{{ pricingPreview }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Labels -->
+          <div class="form-card">
+            <h2 class="card-heading">Labels</h2>
+            <p class="form-hint" style="margin-bottom:1rem;">
+              Shown as chips on the resource card. Select all that apply.
+            </p>
+            <div class="labels-grid">
+              <div class="form-check">
+                <input type="checkbox" id="f-featured" formControlName="isFeatured" />
+                <label for="f-featured">
+                  <span class="label-dot label-dot--featured"></span> Featured
+                </label>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" id="f-best-seller" formControlName="labelBestSeller" />
+                <label for="f-best-seller">
+                  <span class="label-dot label-dot--best-seller"></span> Best Seller
+                </label>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" id="f-hot-selling" formControlName="labelHotSelling" />
+                <label for="f-hot-selling">
+                  <span class="label-dot label-dot--hot-selling"></span> Hot Selling
+                </label>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" id="f-is-new" formControlName="labelIsNew" />
+                <label for="f-is-new">
+                  <span class="label-dot label-dot--new"></span> New
+                </label>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" id="f-recommended" formControlName="labelRecommended" />
+                <label for="f-recommended">
+                  <span class="label-dot label-dot--recommended"></span> Recommended
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thumbnail preview -->
+          @if (form.get('thumbnailUrl')?.value) {
+            <div class="form-card">
+              <h2 class="card-heading">Thumbnail Preview</h2>
+              <img [src]="form.get('thumbnailUrl')?.value" alt="Thumbnail preview" class="thumb-preview" />
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <button type="button" class="btn btn-ghost" (click)="back()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          {{ saving() ? 'Saving…' : (isEditing() ? 'Save Changes' : 'Create Resource') }}
+        </button>
+      </div>
+    </form>
+
+    <!-- ─── Content Section (MCQ Questions / Flashcards) ──────────────────── -->
+    @if (showContent()) {
+
+      <div class="content-section">
+        <div class="content-section-header">
+          <div>
+            @if (currentType() === 'MULTIPLE_CHOICE') {
+              <h2>Multiple Choice Questions</h2>
+              <p class="page-sub">{{ questions().length }} question{{ questions().length !== 1 ? 's' : '' }}</p>
+            } @else {
+              <h2>Flashcards</h2>
+              <p class="page-sub">{{ cards().length }} card{{ cards().length !== 1 ? 's' : '' }}</p>
+            }
+          </div>
+          @if (currentType() === 'MULTIPLE_CHOICE') {
+            <button class="btn btn-primary" (click)="openAddQuestion()" [disabled]="showAddQ()">+ Add Question</button>
+          } @else {
+            <button class="btn btn-primary" (click)="openAddCard()" [disabled]="showAddCard()">+ Add Card</button>
+          }
+        </div>
+
+        @if (contentError()) {
+          <div class="alert alert--error" style="margin-bottom:1rem;">{{ contentError() }}</div>
+        }
+
+        <!-- ── ADD QUESTION FORM ──────────────────────────────────────────── -->
+        @if (showAddQ()) {
+          <div class="content-form-card" [formGroup]="addQForm">
+            <h3 class="content-form-title">New Question</h3>
+            <div class="form-group">
+              <label class="form-label">Question <span class="required">*</span></label>
+              <textarea class="form-control" formControlName="question" rows="3"
+                        placeholder="Enter the question text..."></textarea>
+              @if (qInvalid(addQForm, 'question')) { <span class="form-error">Question is required.</span> }
+            </div>
+            <div class="choices-grid">
+              @for (l of ['A','B','C','D']; track l) {
+                <div class="form-group">
+                  <label class="form-label">Choice {{ l }} <span class="required">*</span></label>
+                  <input type="text" class="form-control" [formControlName]="'choice' + l"
+                         [placeholder]="'Choice ' + l + '...'" />
+                  @if (qInvalid(addQForm, 'choice' + l)) { <span class="form-error">Required.</span> }
+                </div>
+              }
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Correct Answer <span class="required">*</span></label>
+                <select class="form-control" formControlName="correctAnswer">
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                  <option value="D">D</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Order</label>
+                <input type="number" class="form-control" formControlName="order" min="0" />
+              </div>
+              @if (isPhased) {
+                <div class="form-group">
+                  <label class="form-label">Phase</label>
+                  <select class="form-control" formControlName="phase">
+                    <option [value]="1">Phase 1</option>
+                    <option [value]="2">Phase 2</option>
+                  </select>
+                </div>
+              }
+            </div>
+            <div class="form-group">
+              <label class="form-label">Explanation</label>
+              <textarea class="form-control" formControlName="explanation" rows="2"
+                        placeholder="Optional explanation shown after answering..."></textarea>
+            </div>
+            <div class="content-form-actions">
+              <button class="btn btn-ghost" type="button" (click)="cancelAddQuestion()">Cancel</button>
+              <button class="btn btn-primary" type="button" (click)="submitAddQuestion()" [disabled]="savingContent()">
+                {{ savingContent() ? 'Adding…' : 'Add Question' }}
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- ── ADD CARD FORM ──────────────────────────────────────────────── -->
+        @if (showAddCard()) {
+          <div class="content-form-card" [formGroup]="addCardForm">
+            <h3 class="content-form-title">New Flashcard</h3>
+            <div class="form-group">
+              <label class="form-label">Question <span class="required">*</span></label>
+              <textarea class="form-control" formControlName="question" rows="3"
+                        placeholder="Enter the question..."></textarea>
+              @if (qInvalid(addCardForm, 'question')) { <span class="form-error">Question is required.</span> }
+            </div>
+            <div class="form-group">
+              <label class="form-label">Answer <span class="required">*</span></label>
+              <textarea class="form-control" formControlName="answer" rows="3"
+                        placeholder="Enter the answer..."></textarea>
+              @if (qInvalid(addCardForm, 'answer')) { <span class="form-error">Answer is required.</span> }
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Explanation (optional)</label>
+                <input type="text" class="form-control" formControlName="explanation"
+                       placeholder="Optional extra context..." />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Order</label>
+                <input type="number" class="form-control" formControlName="order" min="0" />
+              </div>
+              @if (isPhased) {
+                <div class="form-group">
+                  <label class="form-label">Phase</label>
+                  <select class="form-control" formControlName="phase">
+                    <option [value]="1">Phase 1</option>
+                    <option [value]="2">Phase 2</option>
+                  </select>
+                </div>
+              }
+            </div>
+            <div class="content-form-actions">
+              <button class="btn btn-ghost" type="button" (click)="cancelAddCard()">Cancel</button>
+              <button class="btn btn-primary" type="button" (click)="submitAddCard()" [disabled]="savingContent()">
+                {{ savingContent() ? 'Adding…' : 'Add Card' }}
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- ── QUESTIONS LIST ─────────────────────────────────────────────── -->
+        @if (currentType() === 'MULTIPLE_CHOICE') {
+          @if (loadingContent()) {
+            <div class="loading-row"><div class="spinner"></div><span>Loading questions...</span></div>
+          } @else if (questions().length === 0 && !showAddQ()) {
+            <div class="content-empty">
+              <p>No questions yet. Click <strong>+ Add Question</strong> to create the first one.</p>
+            </div>
+          } @else {
+            <div class="content-list">
+              @for (q of questions(); track q._id; let i = $index) {
+
+                @if (editingQId() === q._id) {
+                  <!-- Inline edit form -->
+                  <div class="content-form-card" [formGroup]="editQForm">
+                    <h3 class="content-form-title">Edit Question {{ i + 1 }}</h3>
+                    <div class="form-group">
+                      <label class="form-label">Question <span class="required">*</span></label>
+                      <textarea class="form-control" formControlName="question" rows="3"></textarea>
+                    </div>
+                    <div class="choices-grid">
+                      @for (l of ['A','B','C','D']; track l) {
+                        <div class="form-group">
+                          <label class="form-label">Choice {{ l }}</label>
+                          <input type="text" class="form-control" [formControlName]="'choice' + l" />
+                        </div>
+                      }
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label class="form-label">Correct Answer</label>
+                        <select class="form-control" formControlName="correctAnswer">
+                          <option value="A">A</option><option value="B">B</option>
+                          <option value="C">C</option><option value="D">D</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Order</label>
+                        <input type="number" class="form-control" formControlName="order" min="0" />
+                      </div>
+                      @if (isPhased) {
+                        <div class="form-group">
+                          <label class="form-label">Phase</label>
+                          <select class="form-control" formControlName="phase">
+                            <option [value]="1">Phase 1</option>
+                            <option [value]="2">Phase 2</option>
+                          </select>
+                        </div>
+                      }
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Explanation</label>
+                      <textarea class="form-control" formControlName="explanation" rows="2"></textarea>
+                    </div>
+                    <div class="content-form-actions">
+                      <button class="btn btn-ghost" type="button" (click)="cancelEditQuestion()">Cancel</button>
+                      <button class="btn btn-primary" type="button" (click)="submitEditQuestion()" [disabled]="savingContent()">
+                        {{ savingContent() ? 'Saving…' : 'Save' }}
+                      </button>
+                    </div>
+                  </div>
+                } @else {
+                  <!-- Question row -->
+                  <div class="content-item">
+                    <div class="content-item-num">{{ i + 1 }}</div>
+                    <div class="content-item-body">
+                      @if (isPhased) {
+                        <span class="phase-badge" [class.phase-badge--2]="q.phase === 2">Phase {{ q.phase ?? 1 }}</span>
+                      }
+                      <p class="content-item-text">{{ q.question }}</p>
+                      <div class="content-item-choices">
+                        @for (l of ['A','B','C','D']; track l) {
+                          <span class="ci-choice" [class.ci-correct]="l === q.correctAnswer">
+                            {{ l }}: {{ getQChoice(q, l) }}
+                          </span>
+                        }
+                      </div>
+                      @if (q.explanation) {
+                        <p class="content-item-hint">&#128161; {{ q.explanation }}</p>
+                      }
+                    </div>
+                    <div class="content-item-actions">
+                      <button class="btn-icon" (click)="startEditQuestion(q)" title="Edit">&#9998;</button>
+                      <button class="btn-icon danger" (click)="deleteQuestion(q._id!)" title="Delete">&#10005;</button>
+                    </div>
+                  </div>
+                }
+
+              }
+            </div>
+          }
+        }
+
+        <!-- ── CARDS LIST ─────────────────────────────────────────────────── -->
+        @if (currentType() === 'SHORT_ANSWER') {
+          @if (loadingContent()) {
+            <div class="loading-row"><div class="spinner"></div><span>Loading cards...</span></div>
+          } @else if (cards().length === 0 && !showAddCard()) {
+            <div class="content-empty">
+              <p>No cards yet. Click <strong>+ Add Card</strong> to create the first one.</p>
+            </div>
+          } @else {
+            <div class="content-list">
+              @for (c of cards(); track c._id; let i = $index) {
+
+                @if (editingCardId() === c._id) {
+                  <div class="content-form-card" [formGroup]="editCardForm">
+                    <h3 class="content-form-title">Edit Card {{ i + 1 }}</h3>
+                    <div class="form-group">
+                      <label class="form-label">Question <span class="required">*</span></label>
+                      <textarea class="form-control" formControlName="question" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Answer <span class="required">*</span></label>
+                      <textarea class="form-control" formControlName="answer" rows="3"></textarea>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label class="form-label">Explanation</label>
+                        <input type="text" class="form-control" formControlName="explanation" />
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Order</label>
+                        <input type="number" class="form-control" formControlName="order" min="0" />
+                      </div>
+                      @if (isPhased) {
+                        <div class="form-group">
+                          <label class="form-label">Phase</label>
+                          <select class="form-control" formControlName="phase">
+                            <option [value]="1">Phase 1</option>
+                            <option [value]="2">Phase 2</option>
+                          </select>
+                        </div>
+                      }
+                    </div>
+                    <div class="content-form-actions">
+                      <button class="btn btn-ghost" type="button" (click)="cancelEditCard()">Cancel</button>
+                      <button class="btn btn-primary" type="button" (click)="submitEditCard()" [disabled]="savingContent()">
+                        {{ savingContent() ? 'Saving…' : 'Save' }}
+                      </button>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="content-item">
+                    <div class="content-item-num">{{ i + 1 }}</div>
+                    <div class="content-item-body">
+                      @if (isPhased) {
+                        <span class="phase-badge" [class.phase-badge--2]="c.phase === 2">Phase {{ c.phase ?? 1 }}</span>
+                      }
+                      <p class="content-item-text"><strong>Q:</strong> {{ c.question }}</p>
+                      <p class="content-item-text" style="margin-top:.35rem;"><strong>A:</strong> {{ c.answer }}</p>
+                      @if (c.explanation) {
+                        <p class="content-item-hint">&#128161; {{ c.explanation }}</p>
+                      }
+                    </div>
+                    <div class="content-item-actions">
+                      <button class="btn-icon" (click)="startEditCard(c)" title="Edit">&#9998;</button>
+                      <button class="btn-icon danger" (click)="deleteCard(c._id!)" title="Delete">&#10005;</button>
+                    </div>
+                  </div>
+                }
+
+              }
+            </div>
+          }
+        }
+
+      </div>
+    } @else if (isEditing() && currentType() === 'PDF') {
+      <div class="content-info-banner">
+        <span>&#128196;</span>
+        PDF resources don't have individual questions — manage the PDF URL and preview settings in the form above.
+      </div>
+    } @else if (!isEditing()) {
+      <div class="content-info-banner">
+        <span>&#128161;</span>
+        Save the resource first, then you'll be able to add questions or flashcards here.
+      </div>
+    }
+
+  }
+</div>

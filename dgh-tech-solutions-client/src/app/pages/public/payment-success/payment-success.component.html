@@ -1,0 +1,33 @@
+<div class="success-page">
+  @if (loading()) {
+    <div class="success-card">
+      <div class="spinner"></div>
+      <p>Verifying your payment...</p>
+    </div>
+  } @else if (errorMsg()) {
+    <div class="success-card">
+      <div class="icon icon--error">&#10005;</div>
+      <h1>Something went wrong</h1>
+      <p class="sub">{{ errorMsg() }}</p>
+      <a routerLink="/my-library" class="btn btn--primary">Go to My Library</a>
+    </div>
+  } @else {
+    <div class="success-card">
+      <div class="icon icon--success">&#10003;</div>
+      <h1>Payment Successful!</h1>
+      <p class="sub">You now have lifetime access to:</p>
+      @if (resource()) {
+        <div class="resource-preview">
+          <strong class="resource-title">{{ resource()!.title }}</strong>
+          <span class="resource-cat">{{ resource()!.category }}</span>
+        </div>
+      }
+      <div class="success-actions">
+        @if (resource()) {
+          <button class="btn btn--primary" (click)="openResource()">Open Resource</button>
+        }
+        <a routerLink="/my-library" class="btn btn--outline">View My Library</a>
+      </div>
+    </div>
+  }
+</div>

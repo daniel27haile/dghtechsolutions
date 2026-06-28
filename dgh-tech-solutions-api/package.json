@@ -9,6 +9,8 @@
     "seed": "node scripts/seed.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1073.0",
+    "@aws-sdk/s3-request-presigner": "^3.1073.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -17,7 +19,12 @@
     "express-validator": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.4.1",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "multer": "^2.2.0",
+    "multer-s3": "^3.0.1",
+    "square": "^44.2.0",
+    "stripe": "^22.2.2",
+    "uuid": "^14.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.3"

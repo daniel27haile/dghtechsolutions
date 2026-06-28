@@ -34,9 +34,24 @@ export class AnalyticsService {
   }
 
   private track(path: string): void {
+    // Deduplicate per path per day — prevents refresh inflation while still
+    // recording every unique page a visitor navigates to within the same day.
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const key   = `dgh_visit_${path}_${today}`;
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, '1');
+
+    // Persist an anonymous session ID for the duration of the browser session.
+    let sessionId = sessionStorage.getItem('dgh_session_id');
+    if (!sessionId) {
+      sessionId = (crypto.randomUUID?.() ?? Math.random().toString(36).slice(2));
+      sessionStorage.setItem('dgh_session_id', sessionId);
+    }
+
     this.http.post(`${this.base}/track`, {
       path,
       referrer: document.referrer,
+      sessionId,
     }).subscribe({ error: () => {} });
   }
 }

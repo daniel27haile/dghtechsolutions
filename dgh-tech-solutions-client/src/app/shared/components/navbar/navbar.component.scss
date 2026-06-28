@@ -100,3 +100,40 @@
 .cta-li a:hover,
 .cta-li a:active,
 .cta-li a.active { color: #fff !important; }
+
+.nav-logout-btn { font-family: inherit; cursor: pointer; }
+
+.nav-cart {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: .4rem;
+  border-radius: 8px;
+  color: var(--clr-gray-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color .2s, background .2s;
+
+  &:hover { color: var(--clr-primary); background: rgba(37,99,235,.07); }
+
+  &__badge {
+    position: absolute;
+    top: -2px;
+    right: -4px;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    background: #2563eb;
+    color: #fff;
+    font-size: .62rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    line-height: 1;
+    pointer-events: none;
+  }
+}

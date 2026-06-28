@@ -7,7 +7,7 @@
   <aside class="sidebar">
     <div class="sidebar-header">
       @if (sidebarOpen()) {
-        <span class="brand">DGH<span class="brand-accent"> Admin</span></span>
+        <span class="brand">DGH<span class="brand-accent"> {{ brandLabel() }}</span></span>
       }
       <button class="toggle-btn desktop-toggle" (click)="toggleSidebar()" aria-label="Toggle sidebar">
         {{ sidebarOpen() ? '&#8249;' : '&#8250;' }}
@@ -16,7 +16,7 @@
     </div>
 
     <nav class="sidebar-nav">
-      @for (link of navLinks; track link.path) {
+      @for (link of navLinks(); track link.path) {
         <a [routerLink]="link.path" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
           <span class="nav-icon">{{ link.icon }}</span>
           @if (sidebarOpen()) {
@@ -47,11 +47,32 @@
         </button>
       </div>
       <div class="topbar-right">
-        <div class="admin-chip">
-          <div class="admin-avatar">{{ auth.currentAdmin()?.name?.[0]?.toUpperCase() || 'A' }}</div>
-          <span class="admin-name">{{ auth.currentAdmin()?.name || 'Admin' }}</span>
+        <div class="profile-wrap">
+          <button class="admin-chip" (click)="toggleDropdown()" [class.chip--open]="dropdownOpen()" aria-haspopup="true" [attr.aria-expanded]="dropdownOpen()">
+            <div class="admin-avatar">{{ initial() }}</div>
+            <div class="admin-chip-text">
+              <span class="admin-name">{{ displayName() }}</span>
+              <span class="admin-role">{{ brandLabel() }}</span>
+            </div>
+            <span class="chip-caret">&#9660;</span>
+          </button>
+
+          @if (dropdownOpen()) {
+            <div class="dd-backdrop" (click)="closeDropdown()"></div>
+            <div class="profile-dropdown" role="menu">
+              <button class="dd-item" role="menuitem" (click)="openProfile()">
+                <span class="dd-icon">&#9998;</span> Profile Settings
+              </button>
+              <button class="dd-item" role="menuitem" (click)="openPw()">
+                <span class="dd-icon">&#9679;</span> Change Password
+              </button>
+              <div class="dd-divider"></div>
+              <button class="dd-item dd-item--danger" role="menuitem" (click)="logout()">
+                <span class="dd-icon">&#8594;</span> Logout
+              </button>
+            </div>
+          }
         </div>
-        <button class="topbar-logout" (click)="logout()" title="Logout">&#8594;</button>
       </div>
     </header>
 
@@ -59,5 +80,88 @@
       <router-outlet />
     </div>
   </div>
+
+  <!-- ── Profile Settings modal ─────────────────────────────────────────────── -->
+  @if (profileOpen()) {
+    <div class="modal-backdrop" (click)="closeProfile()">
+      <div class="modal-card" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
+        <div class="modal-header">
+          <h2 id="profile-modal-title">Profile Settings</h2>
+          <button class="modal-close" (click)="closeProfile()" aria-label="Close">&#10005;</button>
+        </div>
+        <div class="modal-body">
+          @if (profileError()) {
+            <div class="form-banner form-banner--error">{{ profileError() }}</div>
+          }
+          <div class="form-group">
+            <label for="profile-name">Display Name</label>
+            <input id="profile-name" type="text" [value]="profileName()"
+              (input)="profileName.set($any($event.target).value)"
+              placeholder="Your display name" autocomplete="name" />
+          </div>
+          <div class="form-group">
+            <label for="profile-email">Email</label>
+            <input id="profile-email" type="email" [value]="auth.currentAdmin()?.email ?? ''"
+              readonly class="input-readonly" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-modal btn-modal--ghost" (click)="closeProfile()">Cancel</button>
+          <button class="btn-modal btn-modal--primary" (click)="saveProfile()" [disabled]="profileSaving()">
+            {{ profileSaving() ? 'Saving…' : 'Save Changes' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Change Password modal ───────────────────────────────────────────────── -->
+  @if (pwOpen()) {
+    <div class="modal-backdrop" (click)="closePw()">
+      <div class="modal-card" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="pw-modal-title">
+        <div class="modal-header">
+          <h2 id="pw-modal-title">Change Password</h2>
+          <button class="modal-close" (click)="closePw()" aria-label="Close">&#10005;</button>
+        </div>
+        <div class="modal-body">
+          @if (pwError()) {
+            <div class="form-banner form-banner--error">{{ pwError() }}</div>
+          }
+          @if (pwSuccess()) {
+            <div class="form-banner form-banner--success">Password changed successfully!</div>
+          } @else {
+            <div class="form-group">
+              <label for="pw-current">Current Password</label>
+              <input id="pw-current" type="password" [value]="pwCurrent()"
+                (input)="pwCurrent.set($any($event.target).value)"
+                placeholder="Enter current password" autocomplete="current-password" />
+            </div>
+            <div class="form-group">
+              <label for="pw-new">New Password</label>
+              <input id="pw-new" type="password" [value]="pwNew()"
+                (input)="pwNew.set($any($event.target).value)"
+                placeholder="Min. 8 characters" autocomplete="new-password" />
+            </div>
+            <div class="form-group">
+              <label for="pw-confirm">Confirm New Password</label>
+              <input id="pw-confirm" type="password" [value]="pwConfirm()"
+                (input)="pwConfirm.set($any($event.target).value)"
+                placeholder="Repeat new password" autocomplete="new-password" />
+            </div>
+          }
+        </div>
+        <div class="modal-footer">
+          <button class="btn-modal btn-modal--ghost" (click)="closePw()">
+            {{ pwSuccess() ? 'Close' : 'Cancel' }}
+          </button>
+          @if (!pwSuccess()) {
+            <button class="btn-modal btn-modal--primary" (click)="savePw()" [disabled]="pwSaving()">
+              {{ pwSaving() ? 'Updating…' : 'Update Password' }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  }
 
 </div>

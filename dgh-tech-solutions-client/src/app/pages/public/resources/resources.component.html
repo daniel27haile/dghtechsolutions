@@ -1,0 +1,256 @@
+<!-- ─── HERO ──────────────────────────────────────────────────────────────── -->
+<section class="res-hero" aria-labelledby="res-hero-heading">
+  <div class="container">
+    <p class="hero-eyebrow">Learning Hub</p>
+    <h1 id="res-hero-heading">Resources &amp; Study Materials</h1>
+    <p class="hero-sub">
+      Interview prep, certification guides, practice questions, and flashcards —
+      everything you need to level up your skills.
+    </p>
+    <div class="search-wrap">
+      <span class="search-icon" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </span>
+      <input
+        type="search"
+        class="search-input"
+        placeholder="Search by title, topic, or keyword..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="onSearch($event)"
+        aria-label="Search resources"
+      />
+    </div>
+
+    <!-- Credibility stats row -->
+    <div class="hero-stats" aria-hidden="true">
+      <div class="hero-stat">
+        <span class="hs-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </span>
+        <span class="hs-label">Study Guides</span>
+      </div>
+      <span class="hs-divider" aria-hidden="true"></span>
+      <div class="hero-stat">
+        <span class="hs-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </span>
+        <span class="hs-label">Interview Questions</span>
+      </div>
+      <span class="hs-divider" aria-hidden="true"></span>
+      <div class="hero-stat">
+        <span class="hs-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+        </span>
+        <span class="hs-label">Flashcards</span>
+      </div>
+      <span class="hs-divider" aria-hidden="true"></span>
+      <div class="hero-stat">
+        <span class="hs-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </span>
+        <span class="hs-label">Updated Weekly</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CATEGORY CHIPS ────────────────────────────────────────────────────── -->
+<nav class="cat-tabs" aria-label="Resource categories">
+  <div class="container">
+    <div class="cat-tabs-inner">
+
+      <div
+        class="cat-scroll-wrap"
+        [class.has-left]="canScrollLeft()"
+        [class.has-right]="canScrollRight()"
+      >
+        @if (canScrollLeft()) {
+          <button class="cat-arrow cat-arrow--left" (click)="scrollCats(-1)"
+            aria-label="Scroll categories left" tabindex="-1">&#8249;</button>
+        }
+
+        <ul class="cat-list" #catList role="tablist" (scroll)="onCatScroll()">
+          @for (cat of categories; track cat) {
+            <li role="presentation">
+              <button
+                class="cat-tab"
+                [class.active]="activeCategory() === cat"
+                (click)="setCategory(cat)"
+                role="tab"
+                [attr.aria-selected]="activeCategory() === cat"
+              >{{ cat }}</button>
+            </li>
+          }
+        </ul>
+
+        @if (canScrollRight()) {
+          <button class="cat-arrow cat-arrow--right" (click)="scrollCats(1)"
+            aria-label="Scroll categories right" tabindex="-1">&#8250;</button>
+        }
+      </div>
+
+      <!-- Mobile "Contents" browse button -->
+      <button
+        class="contents-btn"
+        type="button"
+        aria-label="Browse all resources"
+        (click)="openModal()"
+      >Contents</button>
+
+    </div>
+  </div>
+</nav>
+
+<!-- ─── CONTENTS MODAL ────────────────────────────────────────────────────── -->
+@if (modalOpen()) {
+  <app-resource-contents-modal
+    [resources]="resources()"
+    [categories]="categories"
+    (closed)="closeModal()"
+    (resourceOpened)="openResource($event)"
+  />
+}
+
+<!-- ─── MAIN LAYOUT ───────────────────────────────────────────────────────── -->
+<div class="res-layout">
+  <div class="container res-layout__inner">
+
+    <!-- ── Sort / Filter toolbar ─────────────────────────────────────────── -->
+    @if (!loading() && !errorMsg()) {
+      <div class="res-toolbar">
+        <div class="toolbar-left">
+          <span class="toolbar-heading">
+            @if (activeCategory() === 'All') { All Resources } @else { {{ activeCategory() }} }
+          </span>
+          <span class="toolbar-count">{{ filtered().length }} result{{ filtered().length !== 1 ? 's' : '' }}</span>
+        </div>
+        <div class="toolbar-right">
+          <!-- Price filter chips -->
+          <div class="filter-chips" role="group" aria-label="Filter by price">
+            @for (opt of priceOptions; track opt.value) {
+              <button
+                class="filter-chip"
+                [class.active]="priceFilter() === opt.value"
+                (click)="priceFilter.set(opt.value)"
+                type="button"
+              >{{ opt.label }}</button>
+            }
+          </div>
+          <!-- Level filter -->
+          <select
+            class="sort-select"
+            [ngModel]="levelFilter()"
+            (ngModelChange)="levelFilter.set($event)"
+            aria-label="Filter by level"
+          >
+            <option value="all">All Levels</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+          <!-- Sort -->
+          <select
+            class="sort-select"
+            [ngModel]="sortBy()"
+            (ngModelChange)="sortBy.set($event)"
+            aria-label="Sort resources"
+          >
+            <option value="newest">Newest</option>
+            <option value="popular">Most Popular</option>
+            <option value="highest-rated">Highest Rated</option>
+            <option value="price-asc">Price: Low → High</option>
+            <option value="price-desc">Price: High → Low</option>
+          </select>
+        </div>
+      </div>
+    }
+
+    <!-- ── Trust badges ───────────────────────────────────────────────────── -->
+    @if (!loading() && !errorMsg()) {
+      <div class="trust-row" aria-hidden="true">
+        <div class="trust-item">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+          <span>Lifetime Access</span>
+        </div>
+        <div class="trust-item">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span>Instant Access</span>
+        </div>
+        <div class="trust-item">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          <span>Updated Content</span>
+        </div>
+        <div class="trust-item">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          <span>Practice Focused</span>
+        </div>
+      </div>
+    }
+
+    <!-- ── Cards grid area ────────────────────────────────────────────────── -->
+    <main class="res-grid-area" aria-label="Resource listing">
+
+      <!-- ── Loading skeletons ─────────────────────────────────────────── -->
+      @if (loading()) {
+        <div class="res-grid" aria-label="Loading resources" aria-busy="true">
+          @for (item of skeletonItems; track $index) {
+            <app-resource-skeleton-card />
+          }
+        </div>
+      }
+
+      <!-- ── Error state ───────────────────────────────────────────────── -->
+      @else if (errorMsg()) {
+        <div class="state-error" role="alert">
+          <span class="state-icon" aria-hidden="true">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </span>
+          <p class="state-title">Something went wrong</p>
+          <p class="state-text">{{ errorMsg() }}</p>
+        </div>
+      }
+
+      <!-- ── Empty state ───────────────────────────────────────────────── -->
+      @else if (filtered().length === 0) {
+        <div class="state-empty">
+          <span class="state-icon" aria-hidden="true">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+          <p class="state-title">No resources found</p>
+          <p class="state-text">
+            @if (searchQuery()) {
+              No results for <strong>"{{ searchQuery() }}"</strong>. Try changing your search or filters.
+            } @else {
+              No resources match the selected filters. Try adjusting your selection.
+            }
+          </p>
+          @if (hasActiveFilters()) {
+            <button class="btn btn--outline btn--sm" (click)="clearFilters()">Clear Filters</button>
+          }
+        </div>
+      }
+
+      <!-- ── Cards grid ────────────────────────────────────────────────── -->
+      @else {
+        <div class="res-grid" role="list">
+          @for (r of filtered(); track r._id) {
+            <div role="listitem">
+              <app-resource-card
+                [resource]="r"
+                [purchased]="isPurchased(r._id)"
+                [saved]="isSaved(r._id)"
+                (viewDetails)="openResource(r)"
+                (primaryCta)="openResource(r)"
+                (addToCart)="addResourceToCart(r)"
+                (saveToLibrary)="saveResource(r)"
+                (removeFromLibrary)="unsaveResource(r)"
+              />
+            </div>
+          }
+        </div>
+      }
+
+    </main>
+
+  </div>
+</div>

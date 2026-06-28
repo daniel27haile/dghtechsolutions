@@ -35,9 +35,12 @@ const adminUserSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['superadmin', 'admin'],
+      enum: ['superadmin', 'admin', 'publisher'],
       default: 'admin',
     },
+    // Publisher-specific optional fields
+    publisherName: { type: String, trim: true, default: '' },
+    bio:           { type: String, trim: true, default: '' },
     isActive: {
       type: Boolean,
       default: true,

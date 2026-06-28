@@ -43,6 +43,17 @@ export class AuthService {
       .pipe(tap((res) => this.currentAdmin.set(res.admin)));
   }
 
+  updateProfile(displayName: string): Observable<{ success: boolean; admin: AdminUser }> {
+    return this.http
+      .patch<{ success: boolean; admin: AdminUser }>(`${environment.apiUrl}/auth/profile`, { displayName })
+      .pipe(tap((res) => {
+        if (res.success) {
+          localStorage.setItem(USER_KEY, JSON.stringify(res.admin));
+          this.currentAdmin.set(res.admin);
+        }
+      }));
+  }
+
   changePassword(current: string, next: string): Observable<{ success: boolean; message: string }> {
     return this.http.put<{ success: boolean; message: string }>(
       `${environment.apiUrl}/auth/change-password`,

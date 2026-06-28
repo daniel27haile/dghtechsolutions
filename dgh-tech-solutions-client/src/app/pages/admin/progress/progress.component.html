@@ -1,0 +1,133 @@
+<div class="admin-page">
+  <!-- ─── Header ──────────────────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <h1>Course Progress</h1>
+      <p class="page-sub">{{ records().length }} learner record{{ records().length !== 1 ? 's' : '' }} total</p>
+    </div>
+    <button class="btn btn-primary" (click)="load()">&#8635; Refresh</button>
+  </div>
+
+  @if (errorMsg()) {
+    <div class="alert alert--error" style="margin-bottom:1rem;">{{ errorMsg() }}</div>
+  }
+
+  <!-- ─── Summary Cards ────────────────────────────────────────────────────── -->
+  @if (!loading() && records().length > 0) {
+    <div class="summary-row">
+      <div class="summary-card">
+        <span class="summary-value">{{ summary().total }}</span>
+        <span class="summary-label">Total Records</span>
+      </div>
+      <div class="summary-card summary-card--progress">
+        <span class="summary-value">{{ summary().in_progress }}</span>
+        <span class="summary-label">In Progress</span>
+      </div>
+      <div class="summary-card summary-card--done">
+        <span class="summary-value">{{ summary().completed }}</span>
+        <span class="summary-label">Completed</span>
+      </div>
+      <div class="summary-card summary-card--not">
+        <span class="summary-value">{{ summary().not_started }}</span>
+        <span class="summary-label">Not Started</span>
+      </div>
+    </div>
+  }
+
+  <!-- ─── Filters ──────────────────────────────────────────────────────────── -->
+  <div class="filters-bar">
+    <input
+      class="search-input"
+      type="text"
+      placeholder="Search by user or resource..."
+      (input)="onSearch($event)"
+    />
+    <select class="filter-select" (change)="onResourceFilter($event)">
+      <option value="">All Resources</option>
+      @for (r of resources(); track r._id) {
+        <option [value]="r._id">{{ r.title }}</option>
+      }
+    </select>
+    <select class="filter-select" (change)="onStatusFilter($event)">
+      <option value="">All Statuses</option>
+      <option value="not_started">Not Started</option>
+      <option value="in_progress">In Progress</option>
+      <option value="completed">Completed</option>
+    </select>
+    @if (searchTerm() || filterResourceId() || filterStatus()) {
+      <button class="btn btn--ghost btn--sm" (click)="clearFilters()">Clear</button>
+    }
+  </div>
+
+  <!-- ─── Loading / Empty ──────────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="loading-row">
+      <div class="spinner"></div>
+      <span>Loading progress data...</span>
+    </div>
+  } @else if (filteredRecords().length === 0) {
+    <div class="empty-panel">
+      <div class="empty-icon">&#128202;</div>
+      <p class="empty-title">
+        {{ records().length === 0 ? 'No progress records yet' : 'No records match your filters' }}
+      </p>
+      <p class="empty-text">
+        {{ records().length === 0
+            ? 'Progress will appear here once learners start their courses.'
+            : 'Try adjusting the search or filters above.' }}
+      </p>
+      @if (searchTerm() || filterResourceId() || filterStatus()) {
+        <button class="btn btn--outline btn--sm" (click)="clearFilters()">Clear Filters</button>
+      }
+    </div>
+  } @else {
+    <!-- ─── Table ────────────────────────────────────────────────────────── -->
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Resource</th>
+            <th>Progress</th>
+            <th>Status</th>
+            <th>Started</th>
+            <th>Last Active</th>
+            <th>Completed</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of filteredRecords(); track p._id) {
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar">{{ p.userName[0].toUpperCase() }}</div>
+                  <div>
+                    <div class="user-name">{{ p.userName }}</div>
+                    <div class="user-email">{{ p.userEmail }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="resource-cell">
+                  <div class="resource-title">{{ p.resourceTitle }}</div>
+                  <span class="type-chip">{{ typeBadge(p.resourceType) }}</span>
+                </div>
+              </td>
+              <td class="progress-cell">
+                <span class="progress-pct" [class.progress-pct--done]="p.progressPercentage >= 100">{{ p.progressPercentage }}%</span>
+                <app-progress-bar [pct]="p.progressPercentage" />
+              </td>
+              <td>
+                <span class="status-chip {{ statusClass(p.status) }}">{{ statusLabel(p.status) }}</span>
+              </td>
+              <td class="date-cell">{{ formatDate(p.startedAt) }}</td>
+              <td class="date-cell">{{ formatDate(p.lastAccessedAt) }}</td>
+              <td class="date-cell">{{ formatDate(p.completedAt) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="results-count">Showing {{ filteredRecords().length }} of {{ records().length }} records</p>
+  }
+</div>

@@ -1,0 +1,56 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h1 class="auth-title">Welcome back</h1>
+    <p class="auth-sub">Sign in to access your purchased resources.</p>
+
+    @if (errorMsg()) {
+      <div class="alert alert--error">{{ errorMsg() }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="auth-form">
+      <div class="field">
+        <label class="label" for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          class="input"
+          [class.input--error]="form.get('email')!.invalid && form.get('email')!.touched"
+          formControlName="email"
+          placeholder="you@example.com"
+          autocomplete="email"
+        />
+        @if (form.get('email')!.hasError('required') && form.get('email')!.touched) {
+          <span class="field-error">Email is required.</span>
+        }
+        @if (form.get('email')!.hasError('email') && form.get('email')!.touched) {
+          <span class="field-error">Enter a valid email address.</span>
+        }
+      </div>
+
+      <div class="field">
+        <label class="label" for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          class="input"
+          [class.input--error]="form.get('password')!.invalid && form.get('password')!.touched"
+          formControlName="password"
+          placeholder="Your password"
+          autocomplete="current-password"
+        />
+        @if (form.get('password')!.hasError('required') && form.get('password')!.touched) {
+          <span class="field-error">Password is required.</span>
+        }
+      </div>
+
+      <button type="submit" class="btn-auth" [disabled]="loading()">
+        {{ loading() ? 'Signing in…' : 'Sign In' }}
+      </button>
+    </form>
+
+    <p class="auth-switch">
+      Don't have an account?
+      <a routerLink="/signup" class="auth-link">Create one</a>
+    </p>
+  </div>
+</div>

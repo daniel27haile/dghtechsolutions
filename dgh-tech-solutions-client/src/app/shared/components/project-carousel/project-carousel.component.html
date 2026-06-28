@@ -1,6 +1,6 @@
-<!-- ── Loading skeleton ────────────────────────────────────────────────────── -->
+<!-- ── Loading skeletons ────────────────────────────────────────────────────── -->
 @if (loading()) {
-  <div class="carousel-skeleton" aria-label="Loading projects..." aria-busy="true">
+  <div class="projects-grid" aria-label="Loading projects..." aria-busy="true">
     @for (s of skeletons; track s) {
       <div class="skeleton-card">
         <div class="skeleton-img shimmer"></div>
@@ -23,158 +23,92 @@
     }
   </div>
 
-<!-- ── Error state ─────────────────────────────────────────────────────────── -->
+<!-- ── Error state ──────────────────────────────────────────────────────────── -->
 } @else if (error()) {
-  <div class="carousel-state" role="alert">
+  <div class="projects-state" role="alert">
     <div class="state-icon state-icon--error">&#9888;</div>
     <h3>Couldn't Load Projects</h3>
     <p>Something went wrong while fetching featured projects.</p>
-    <button class="state-btn" (click)="retryLoad()">Try Again</button>
+    <button class="state-btn" type="button" (click)="retryLoad()">Try Again</button>
   </div>
 
 <!-- ── Empty state ─────────────────────────────────────────────────────────── -->
 } @else if (projects().length === 0) {
-  <div class="carousel-state">
-    <div class="state-icon">◧</div>
+  <div class="projects-state">
+    <div class="state-icon">&#9632;</div>
     <h3>No Featured Projects Yet</h3>
     <p>Check back soon — we're always building something great.</p>
-    <a routerLink="/contact" class="state-btn">Start a Project →</a>
+    <a routerLink="/contact" class="state-btn">Start a Project &rarr;</a>
   </div>
 
-<!-- ── Carousel ────────────────────────────────────────────────────────────── -->
+<!-- ── Projects grid ───────────────────────────────────────────────────────── -->
 } @else {
-  <div class="carousel-wrap"
-       role="region"
-       aria-label="Featured projects carousel"
-       tabindex="0"
-       (mouseenter)="pauseAutoplay()"
-       (mouseleave)="resumeAutoplay()"
-       (touchstart)="onTouchStart($event)"
-       (touchend)="onTouchEnd($event)">
+  <div class="projects-grid" role="list" aria-label="Featured projects">
 
-    <!-- Clipping viewport -->
-    <div class="carousel-viewport" #viewport>
-      <div class="carousel-track"
-           [style.transform]="trackTransform()"
-           [style.width]="trackWidth()"
-           role="list"
-           aria-label="Project cards">
+    @for (p of projects(); track p._id) {
+      <article class="project-card" role="listitem" [attr.aria-label]="p.title">
 
-        @for (p of projects(); track p._id; let i = $index) {
-          <article class="carousel-card"
-                   [style.width]="cardWidthPx()"
-                   role="listitem"
-                   [attr.aria-label]="p.title">
+        <!-- Image / placeholder -->
+        <div class="card-img">
+          @if (p.imageUrl) {
+            <img
+              [src]="p.imageUrl"
+              [alt]="p.title + ' project screenshot'"
+              loading="lazy"
+              width="400"
+              height="220"
+            />
+          } @else {
+            <div class="img-placeholder" aria-hidden="true">
+              <span>{{ p.title[0] }}</span>
+            </div>
+          }
+          @if (p.category) {
+            <span class="cat-badge">{{ p.category }}</span>
+          }
+        </div>
 
-            <!-- Card image -->
-            <div class="card-img" [class.card-img--placeholder]="!p.imageUrl">
-              @if (p.imageUrl) {
-                <img [src]="p.imageUrl"
-                     [alt]="p.title + ' project screenshot'"
-                     loading="lazy"
-                     width="400" height="220" />
-              } @else {
-                <div class="img-placeholder" aria-hidden="true">
-                  <span>{{ p.title[0] }}</span>
-                </div>
+        <!-- Card body -->
+        <div class="card-body">
+          <h3>{{ p.title }}</h3>
+          <p class="card-desc">{{ p.shortDescription }}</p>
+
+          @if (p.techStack?.length) {
+            <div class="tech-tags" aria-label="Technologies used">
+              @for (t of p.techStack!.slice(0, 4); track t) {
+                <span class="tech-tag">{{ t }}</span>
               }
-              <!-- Category badge overlaid on image -->
-              @if (p.category) {
-                <span class="cat-badge">{{ p.category }}</span>
+              @if (p.techStack!.length > 4) {
+                <span class="tech-more">+{{ p.techStack!.length - 4 }}</span>
               }
             </div>
+          }
 
-            <!-- Card body -->
-            <div class="card-body">
-              <h3>{{ p.title }}</h3>
-              <p class="card-desc">{{ p.shortDescription }}</p>
+          <div class="card-footer">
+            <button
+              class="btn-details"
+              type="button"
+              (click)="openModal(p)"
+              [attr.aria-label]="'View details for ' + p.title"
+            >Details <span aria-hidden="true">&rarr;</span></button>
 
-              @if (p.techStack?.length) {
-                <div class="tech-tags" aria-label="Technologies used">
-                  @for (t of p.techStack!.slice(0, 4); track t) {
-                    <span class="tech-tag">{{ t }}</span>
-                  }
-                  @if ((p.techStack!.length) > 4) {
-                    <span class="tech-more">+{{ p.techStack!.length - 4 }}</span>
-                  }
-                </div>
-              }
+            @if (p.liveUrl) {
+              <a
+                [href]="p.liveUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn-live"
+                [attr.aria-label]="'Visit live website for ' + p.title + ' (opens in new tab)'"
+              >Live <span aria-hidden="true">&#8599;</span></a>
+            }
+          </div>
+        </div>
 
-              <div class="card-footer">
-                <button class="btn-details"
-                        type="button"
-                        (click)="openModal(p)"
-                        [attr.aria-label]="'View details for ' + p.title">
-                  Details <span aria-hidden="true">→</span>
-                </button>
-                @if (p.liveUrl) {
-                  <a [href]="p.liveUrl"
-                     target="_blank"
-                     rel="noopener noreferrer"
-                     class="btn-live"
-                     [attr.aria-label]="'Visit live website for ' + p.title + ' (opens in new tab)'">
-                    Live <span aria-hidden="true">&#8599;</span>
-                  </a>
-                }
-              </div>
-            </div>
-
-          </article>
-        }
-
-      </div>
-    </div><!-- /viewport -->
-
-    <!-- Prev arrow -->
-    <button class="arrow arrow--prev"
-            (click)="prev()"
-            [disabled]="current() === 0 && maxIndex() === 0"
-            [attr.aria-label]="'Previous slide (currently ' + (current() + 1) + ' of ' + (maxIndex() + 1) + ')'"
-            [class.arrow--at-start]="current() === 0">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <polyline points="15 18 9 12 15 6"/>
-      </svg>
-    </button>
-
-    <!-- Next arrow -->
-    <button class="arrow arrow--next"
-            (click)="next()"
-            [attr.aria-label]="'Next slide (currently ' + (current() + 1) + ' of ' + (maxIndex() + 1) + ')'"
-            [class.arrow--at-end]="current() === maxIndex()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <polyline points="9 18 15 12 9 6"/>
-      </svg>
-    </button>
-
-    <!-- Dot navigation -->
-    @if (dots.length > 0) {
-      <div class="dots"
-           role="tablist"
-           aria-label="Slide navigation">
-        @for (idx of dots; track idx) {
-          <button class="dot"
-                  role="tab"
-                  [class.dot--active]="idx === current()"
-                  [attr.aria-selected]="idx === current()"
-                  [attr.aria-label]="'Go to slide group ' + (idx + 1) + ' of ' + dots.length"
-                  (click)="goTo(idx)">
-          </button>
-        }
-      </div>
+      </article>
     }
 
-    <!-- Screen reader live region -->
-    <div class="sr-only" aria-live="polite" aria-atomic="true">
-      Showing projects starting from {{ current() + 1 }}
-    </div>
-
-  </div><!-- /carousel-wrap -->
+  </div>
 }
 
 <!-- Project detail modal -->
-<app-project-modal
-  [project]="selectedProject()"
-  (closed)="closeModal()" />
-
+<app-project-modal [project]="selectedProject()" (closed)="closeModal()" />

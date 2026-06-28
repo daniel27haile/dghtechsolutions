@@ -1,0 +1,166 @@
+<div class="detail">
+  <div class="detail-body">
+
+    <!-- ── Identity (badges + title) — hidden when modal provides its own header ── -->
+    @if (showIdentity) {
+      <div class="detail-identity">
+        <div class="detail-badges">
+          <span class="type-pill {{ typeColorClass }}">{{ typeBadge }}</span>
+          <span class="cat-pill">{{ resource.category }}</span>
+          @if (resource.level) { <span class="level-pill">{{ resource.level }}</span> }
+        </div>
+        <h2 class="detail-title">{{ resource.title }}</h2>
+      </div>
+    }
+
+    <!-- ── Meta row ────────────────────────────────────────────────────────── -->
+    @if (resource.duration || resource.lessonCount || formattedDate) {
+      <div class="detail-meta">
+        @if (resource.duration) {
+          <span class="meta-item"><span aria-hidden="true">&#9200;</span> {{ resource.duration }}</span>
+        }
+        @if (resource.lessonCount) {
+          <span class="meta-item">
+            {{ resource.lessonCount }}
+            {{ resource.type === 'MULTIPLE_CHOICE' ? 'questions' : resource.type === 'SHORT_ANSWER' ? 'flashcards' : 'lessons' }}
+          </span>
+        }
+        @if (formattedDate) {
+          <span class="meta-item">Updated {{ formattedDate }}</span>
+        }
+      </div>
+    }
+
+    <!-- ── Rating ─────────────────────────────────────────────────────────── -->
+    <div
+      class="detail-rating"
+      [attr.aria-label]="hasRating
+        ? 'Rated ' + (resource.averageRating ?? 0).toFixed(1) + ' out of 5, ' + reviewCountText
+        : 'No reviews yet'"
+    >
+      <app-star-rating
+        [rating]="hasRating ? (resource.averageRating ?? 0) : 0"
+        [muted]="!hasRating"
+        mode="display"
+        size="md"
+      />
+      <!-- star component renders the numeric value; we only add the review count -->
+      <span class="rating-text" [class.rating-text--muted]="!hasRating" aria-hidden="true">
+        @if (hasRating) {
+          ({{ reviewCountText }})
+        } @else {
+          No reviews yet
+        }
+      </span>
+    </div>
+
+    <!-- ── About ──────────────────────────────────────────────────────────── -->
+    <div class="detail-section">
+      <h3 class="section-title">About</h3>
+      <p class="detail-desc">{{ resource.fullDescription || resource.description }}</p>
+    </div>
+
+    <!-- ── What You'll Learn ──────────────────────────────────────────────── -->
+    @if (resource.whatYouWillLearn && resource.whatYouWillLearn.length > 0) {
+      <div class="detail-section">
+        <h3 class="section-title">What you'll learn</h3>
+        <ul class="learn-list">
+          @for (item of learnItems; track item) {
+            <li class="learn-item">{{ item }}</li>
+          }
+        </ul>
+        @if (!showAllLearn && remainingLearn > 0) {
+          <button class="see-more-btn" type="button" (click)="showAllLearn = true">
+            Show {{ remainingLearn }} more &#8250;
+          </button>
+        }
+      </div>
+    }
+
+    <!-- ── Curriculum ─────────────────────────────────────────────────────── -->
+    @if (resource.curriculum && resource.curriculum.length > 0) {
+      <div class="detail-section">
+        <h3 class="section-title">
+          Contents
+          @if (totalLessons > 0) {
+            <span class="section-count">{{ totalLessons }} items</span>
+          }
+        </h3>
+        <div class="curriculum">
+          @for (sec of curriculumSections; track sec.sectionTitle) {
+            <div class="curriculum-section">
+              <p class="curriculum-section__title">{{ sec.sectionTitle }}</p>
+              @if (sec.lessons && sec.lessons.length > 0) {
+                <ul class="curriculum-section__list">
+                  @for (lesson of sec.lessons; track lesson) {
+                    <li>{{ lesson }}</li>
+                  }
+                </ul>
+              }
+            </div>
+          }
+        </div>
+        @if (!showAllCurriculum && remainingCurriculum > 0) {
+          <button class="see-more-btn" type="button" (click)="showAllCurriculum = true">
+            Show {{ remainingCurriculum }} more sections &#8250;
+          </button>
+        }
+      </div>
+    }
+
+    <!-- ── Included ────────────────────────────────────────────────────────── -->
+    @if (includedItems.length > 0) {
+      <div class="detail-section">
+        <h3 class="section-title">Included</h3>
+        <ul class="learn-list">
+          @for (item of includedItems; track item) {
+            <li class="learn-item">{{ item }}</li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- ── Requirements ───────────────────────────────────────────────────── -->
+    @if (resource.requirements && resource.requirements.length > 0) {
+      <div class="detail-section">
+        <h3 class="section-title">Requirements</h3>
+        <ul class="simple-list">
+          @for (req of resource.requirements; track req) {
+            <li>{{ req }}</li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- ── Who this is for ────────────────────────────────────────────────── -->
+    @if (resource.targetAudience && resource.targetAudience.length > 0) {
+      <div class="detail-section">
+        <h3 class="section-title">Who this is for</h3>
+        <ul class="simple-list">
+          @for (aud of resource.targetAudience; track aud) {
+            <li>{{ aud }}</li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- ── Tags ───────────────────────────────────────────────────────────── -->
+    @if (resource.tags && resource.tags.length > 0) {
+      <div class="detail-tags">
+        @for (tag of resource.tags; track tag) {
+          <span class="detail-tag">{{ tag }}</span>
+        }
+      </div>
+    }
+
+    <!-- ── Bundle note ────────────────────────────────────────────────────── -->
+    @if (resource.type === 'BUNDLE' && resource.includedResourceIds && resource.includedResourceIds.length > 0) {
+      <div class="detail-section">
+        <p class="bundle-note">
+          &#128230; This bundle includes {{ resource.includedResourceIds.length }} resources — all accessible after purchase.
+        </p>
+      </div>
+    }
+
+  </div>
+</div>

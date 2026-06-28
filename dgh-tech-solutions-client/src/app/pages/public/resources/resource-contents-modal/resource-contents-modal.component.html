@@ -1,0 +1,150 @@
+<!-- Overlay -->
+<div class="modal-overlay" role="presentation" (click)="onOverlayClick($event)">
+
+  <!-- Panel -->
+  <div
+    class="modal-panel"
+    #panel
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title"
+  >
+    <!-- Header -->
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-title">
+        Browse Resources
+        @if (totalCount() > 0) {
+          <span class="modal-count">{{ totalCount() }}</span>
+        }
+      </h2>
+      <button
+        class="modal-close"
+        #closeBtn
+        (click)="close()"
+        aria-label="Close resource browser"
+        type="button"
+      >&#10005;</button>
+    </div>
+
+    <!-- Search -->
+    <div class="modal-search">
+      <span class="modal-search__icon" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </span>
+      <input
+        class="modal-search__input"
+        type="search"
+        placeholder="Search resources..."
+        aria-label="Search resources"
+        [value]="searchQuery()"
+        (input)="onSearch($event)"
+        #searchInput
+      />
+      @if (searchQuery()) {
+        <button
+          class="modal-search__clear"
+          type="button"
+          aria-label="Clear search"
+          (click)="clearSearch(searchInput)"
+        >&#10005;</button>
+      }
+    </div>
+
+    <!-- Category pills -->
+    <div class="modal-cats" role="tablist" aria-label="Filter by category">
+      @for (cat of categories; track cat) {
+        <button
+          class="modal-cat"
+          [class.active]="activeCategory() === cat"
+          (click)="setCategory(cat)"
+          role="tab"
+          [attr.aria-selected]="activeCategory() === cat"
+          type="button"
+        >{{ cat }}</button>
+      }
+    </div>
+
+    <!-- Resource list -->
+    <div class="modal-body">
+      @if (visibleItems().length === 0) {
+        <div class="modal-empty">
+          <p class="modal-empty__title">No resources found</p>
+          @if (searchQuery()) {
+            <p class="modal-empty__text">Try a different search term.</p>
+          }
+        </div>
+      } @else {
+        <ul class="modal-list" role="list">
+          @for (r of visibleItems(); track r._id) {
+            <li class="modal-item">
+              <!-- Cover icon -->
+              <div class="modal-item__cover" [attr.data-type]="r.type">
+                @if (r.type === 'PDF') {
+                  <span>&#128196;</span>
+                } @else if (r.type === 'MULTIPLE_CHOICE') {
+                  <span>&#9989;</span>
+                } @else if (r.type === 'SHORT_ANSWER') {
+                  <span>&#128276;</span>
+                } @else {
+                  <span>&#128230;</span>
+                }
+              </div>
+
+              <!-- Info -->
+              <div class="modal-item__info">
+                <div class="modal-item__badges">
+                  <span class="modal-badge modal-badge--cat">{{ r.category }}</span>
+                  <span class="modal-badge {{ typeClass(r.type) }}">{{ typeBadge(r.type) }}</span>
+                  @if (r.isPaid) {
+                    <span class="modal-badge modal-badge--paid">${{ r.price }}</span>
+                  } @else {
+                    <span class="modal-badge modal-badge--free">Free</span>
+                  }
+                </div>
+                <p class="modal-item__title">{{ r.title }}</p>
+                <div
+                  class="modal-item__rating"
+                  [attr.aria-label]="(r.reviewCount ?? 0) > 0 ? ('Rated ' + (r.averageRating ?? 0).toFixed(1) + ' out of 5 based on ' + r.reviewCount + ' reviews') : 'No reviews yet'"
+                >
+                  <app-star-rating
+                    [rating]="(r.reviewCount ?? 0) > 0 ? (r.averageRating ?? 0) : 0"
+                    [muted]="(r.reviewCount ?? 0) === 0"
+                    mode="display"
+                    size="sm"
+                  />
+                  <span class="modal-item__rating-text" [class.modal-item__rating-text--muted]="(r.reviewCount ?? 0) === 0" aria-hidden="true">
+                    @if ((r.reviewCount ?? 0) > 0) {
+                      {{ (r.averageRating ?? 0).toFixed(1) }} ({{ r.reviewCount }})
+                    } @else {
+                      No reviews yet
+                    }
+                  </span>
+                </div>
+                <p class="modal-item__desc">{{ r.description }}</p>
+              </div>
+
+              <!-- Action -->
+              <button
+                class="modal-item__btn btn btn--primary btn--sm"
+                type="button"
+                (click)="open(r)"
+              >Open</button>
+            </li>
+          }
+        </ul>
+
+        @if (hasMore()) {
+          <div class="modal-load-more">
+            <button
+              class="btn btn--outline btn--sm"
+              type="button"
+              (click)="loadMore()"
+            >
+              See {{ remaining() }} more
+            </button>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>

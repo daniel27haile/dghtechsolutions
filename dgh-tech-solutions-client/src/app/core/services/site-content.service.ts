@@ -32,6 +32,6 @@ export class SiteContentService {
   /** Saves content and invalidates the cached entry for that key. */
   upsert(key: string, body: Partial<SiteContentSection>): Observable<SectionResponse> {
     this.keyCache.delete(key);
-    return this.http.put<SectionResponse>(`${this.base}/admin/${key}`, body);
+    return this.http.put<SectionResponse>(`${this.base}/admin/${key}`, { data: body });
   }
 }

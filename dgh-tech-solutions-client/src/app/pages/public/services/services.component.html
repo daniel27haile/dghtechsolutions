@@ -1,0 +1,222 @@
+<!-- ═══ 1. HERO ══════════════════════════════════════════════════════════════ -->
+<section class="sv-hero" aria-labelledby="sv-hero-h1">
+  <div class="sv-orb sv-orb--a"></div>
+  <div class="sv-orb sv-orb--b"></div>
+  <div class="sv-hero-inner">
+    <p class="sv-eyebrow">{{ content()?.subtitle || 'What We Build' }}</p>
+    <h1 id="sv-hero-h1">{{ content()?.title || 'Helping Businesses Build&nbsp;Modern Software Solutions' }}</h1>
+    <p class="sv-hero-sub">
+      {{ content()?.body || 'End-to-end digital products — web apps, mobile apps, cloud platforms, APIs, AI-ready solutions, and enterprise dashboards. From first commit to production and beyond.' }}
+    </p>
+    <div class="sv-hero-ctas">
+      <a routerLink="/contact" class="btn btn--primary">Start Your Project</a>
+      <a routerLink="/contact" class="btn btn--outline">Contact Us</a>
+    </div>
+
+    <!-- Trust row -->
+    <div class="sv-trust" aria-label="Key credentials">
+      <div class="sv-tr-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>8+ Years Experience</span>
+      </div>
+      <span class="sv-tr-div" aria-hidden="true"></span>
+      <div class="sv-tr-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+        <span>Cloud Ready</span>
+      </div>
+      <span class="sv-tr-div" aria-hidden="true"></span>
+      <div class="sv-tr-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+        <span>AI-Ready Solutions</span>
+      </div>
+      <span class="sv-tr-div" aria-hidden="true"></span>
+      <div class="sv-tr-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        <span>End-to-End Development</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 2. FEATURED SERVICES ════════════════════════════════════════════════ -->
+<section class="sv-section" aria-labelledby="sv-feat-heading">
+  <div class="sv-container">
+    <div class="sv-section-head">
+      <p class="sv-eyebrow">Core Services</p>
+      <h2 id="sv-feat-heading">What We Build</h2>
+      <p>Our primary capabilities — end-to-end digital products designed to perform at scale from day one.</p>
+    </div>
+    <div class="sv-feat-grid">
+      @for (svc of featuredServices; track svc.title) {
+        <article class="sv-feat-card">
+          <div class="sv-feat-icon" [innerHTML]="icon(svc.icon, 28)"></div>
+          <h3>{{ svc.title }}</h3>
+          <p>{{ svc.description }}</p>
+          <div class="sv-tags" [attr.aria-label]="svc.title + ' technologies'">
+            @for (tag of svc.tags; track tag) {
+              <span class="sv-tag">{{ tag }}</span>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 3. SPECIALIZED SERVICES ════════════════════════════════════════════ -->
+<section class="sv-section sv-section--gray" aria-labelledby="sv-spec-heading">
+  <div class="sv-container">
+    <div class="sv-section-head">
+      <p class="sv-eyebrow">Specialized Work</p>
+      <h2 id="sv-spec-heading">Specialized Capabilities</h2>
+      <p>Targeted expertise for the details that make software products complete and production-ready.</p>
+    </div>
+    <div class="sv-spec-grid">
+      @for (svc of specializedServices; track svc.title) {
+        <article class="sv-spec-card">
+          <div class="sv-spec-icon" [innerHTML]="icon(svc.icon, 22)"></div>
+          <h3>{{ svc.title }}</h3>
+          <p>{{ svc.description }}</p>
+          <div class="sv-tags">
+            @for (tag of svc.tags; track tag) {
+              <span class="sv-tag">{{ tag }}</span>
+            }
+          </div>
+          @if (svc.link) {
+            <a [routerLink]="svc.link" class="sv-card-link">Browse {{ svc.title }} &rarr;</a>
+          }
+        </article>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 4. CMS SERVICE PACKAGES (conditional) ══════════════════════════════ -->
+@if (loading()) {
+  <div class="sv-loading" aria-label="Loading service packages"><app-loading-spinner /></div>
+} @else if (services().length > 0) {
+  <section class="sv-section" aria-label="Service packages">
+    <div class="sv-container">
+      <app-section-title
+        subtitle="Service Packages"
+        title="Current Offerings"
+        description="Active packages and solutions available for immediate engagement."
+        [center]="true"
+      />
+      <div class="sv-cms-grid">
+        @for (svc of services(); track svc._id) {
+          <app-service-card [service]="svc" />
+        }
+      </div>
+    </div>
+  </section>
+}
+
+<!-- ═══ 5. WHY CHOOSE DGH ══════════════════════════════════════════════════ -->
+<section class="sv-section sv-section--gray" aria-labelledby="sv-why-heading">
+  <div class="sv-container">
+    <div class="sv-section-head">
+      <p class="sv-eyebrow">Why DGH</p>
+      <h2 id="sv-why-heading">Why Businesses Choose DGH Tech Solutions</h2>
+      <p>We combine technical depth with a clear focus on delivering software that actually works in production.</p>
+    </div>
+    <div class="sv-why-grid">
+      @for (card of whyCards; track card.title) {
+        <div class="sv-why-card">
+          <div class="sv-why-icon" [innerHTML]="icon(card.icon, 22)"></div>
+          <h3>{{ card.title }}</h3>
+          <p>{{ card.body }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 6. DEVELOPMENT PROCESS ══════════════════════════════════════════════ -->
+<section class="sv-section" aria-labelledby="sv-proc-heading">
+  <div class="sv-container">
+    <div class="sv-section-head">
+      <p class="sv-eyebrow">How We Work</p>
+      <h2 id="sv-proc-heading">Our Development Process</h2>
+      <p>A structured, repeatable approach that keeps projects on track from discovery to deployment.</p>
+    </div>
+    <div class="sv-process" role="list">
+      @for (step of processSteps; track step.num) {
+        <div class="sv-step" role="listitem">
+          <div class="sv-step-num" aria-hidden="true">{{ step.num }}</div>
+          <div class="sv-step-label">{{ step.label }}</div>
+          <p class="sv-step-desc">{{ step.desc }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 7. TECHNOLOGIES ══════════════════════════════════════════════════════ -->
+<section class="sv-section sv-section--gray" aria-labelledby="sv-tech-heading">
+  <div class="sv-container">
+    <div class="sv-section-head">
+      <p class="sv-eyebrow">Our Stack</p>
+      <h2 id="sv-tech-heading">Technologies We Use</h2>
+      <p>Modern, well-supported tools that ensure maintainable, scalable, and production-ready software.</p>
+    </div>
+    <div class="sv-tech-pills" aria-label="Technologies">
+      @for (t of techs; track t) {
+        <span class="sv-tech-pill">{{ t }}</span>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 8. INDUSTRIES ════════════════════════════════════════════════════════ -->
+<section class="sv-section" aria-labelledby="sv-ind-heading">
+  <div class="sv-container">
+    <div class="sv-section-head">
+      <p class="sv-eyebrow">Who We Serve</p>
+      <h2 id="sv-ind-heading">Industries We Serve</h2>
+      <p>Experience across diverse sectors — we understand the specific challenges each industry faces.</p>
+    </div>
+    <div class="sv-ind-grid">
+      @for (ind of industries; track ind.label) {
+        <div class="sv-ind-card">
+          <div class="sv-ind-icon" [innerHTML]="icon(ind.icon, 20)"></div>
+          <span>{{ ind.label }}</span>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 9. PROJECT EXAMPLES ══════════════════════════════════════════════════ -->
+<section class="sv-section sv-section--gray" aria-labelledby="sv-ex-heading">
+  <div class="sv-container">
+    <div class="sv-section-head">
+      <p class="sv-eyebrow">Our Work</p>
+      <h2 id="sv-ex-heading">Project Examples</h2>
+      <p>A sample of the types of solutions we've built — each tailored to specific business needs.</p>
+    </div>
+    <div class="sv-ex-grid">
+      @for (ex of projectExamples; track ex.title) {
+        <div class="sv-ex-card">
+          <h3>{{ ex.title }}</h3>
+          <p>{{ ex.desc }}</p>
+          <div class="sv-tags">
+            @for (tag of ex.tags; track tag) {
+              <span class="sv-tag">{{ tag }}</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 10. FINAL CTA ════════════════════════════════════════════════════════ -->
+<app-cta-section
+  heading="Ready to build your next project?"
+  sub="Let's turn your idea into reliable, scalable, production-ready software."
+  primaryLabel="Start Your Project"
+  primaryLink="/contact"
+  secondaryLabel="Book Consultation"
+  secondaryLink="/contact"
+/>

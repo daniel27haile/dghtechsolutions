@@ -1,0 +1,177 @@
+<!-- ─── Header ──────────────────────────────────────────────────────────────── -->
+<section class="library-hero">
+  <div class="container">
+    <div class="hero-row">
+      <div>
+        <p class="hero-eyebrow">My Library</p>
+        <h1>Your Learning Library</h1>
+        <p class="hero-sub">Welcome back, {{ userAuth.currentUser()?.name }}.</p>
+      </div>
+      @if (!loading() && hasItems) {
+        <a routerLink="/resources" class="btn btn--outline hero-browse-btn">Browse More Resources</a>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ─── Content ─────────────────────────────────────────────────────────────── -->
+<section class="section library-section">
+  <div class="container">
+    @if (loading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading your library...</p>
+      </div>
+    } @else if (errorMsg()) {
+      <div class="alert alert--error">{{ errorMsg() }}</div>
+    } @else if (!hasItems) {
+      <div class="empty-state">
+        <h2 class="empty-title">Your library is empty</h2>
+        <p class="empty-text">Browse the resource hub to unlock premium content or save free resources.</p>
+        <a routerLink="/resources" class="btn btn--primary">Browse Resources</a>
+      </div>
+    } @else {
+
+      <!-- ── Purchased Resources ─────────────────────────────────────────────── -->
+      @if (purchased().length > 0) {
+        <div class="lib-section-header">
+          <h2 class="lib-section-title">Purchased Resources</h2>
+          <span class="lib-section-count">{{ purchased().length }}</span>
+        </div>
+        <div class="library-grid">
+          @for (item of purchased(); track item.resource._id) {
+            <article class="lib-card">
+              <div class="lib-cover">
+                @if (item.resource.thumbnailUrl) {
+                  <img [src]="item.resource.thumbnailUrl" [alt]="item.resource.title" class="lib-cover-img" loading="lazy" />
+                } @else {
+                  <div class="lib-cover-placeholder" [attr.data-type]="item.resource.type">
+                    <span>{{
+                      item.resource.type === 'PDF'             ? '&#128196;' :
+                      item.resource.type === 'MULTIPLE_CHOICE' ? '&#10003;'  :
+                      item.resource.type === 'BUNDLE'          ? '&#128230;' :
+                                                                 '&#128276;'
+                    }}</span>
+                  </div>
+                }
+                <span class="lib-access-badge">&#10003; Lifetime Access</span>
+                @if (isCompleted(item.resource._id ?? '')) {
+                  <span class="lib-completed-badge">&#10003; Completed</span>
+                }
+              </div>
+              <div class="lib-body">
+                <div class="lib-badges">
+                  <span class="lib-type-badge">{{ typeBadge(item.resource.type) }}</span>
+                  @if (item.sourcePurchaseType === 'BUNDLE') {
+                    <span class="lib-bundle-badge" [title]="'Included in: ' + item.bundleName">Included in bundle</span>
+                  }
+                </div>
+                <h3 class="lib-title">{{ item.resource.title }}</h3>
+                <p class="lib-desc">{{ item.resource.description }}</p>
+
+                @if (item.resource.type !== 'BUNDLE') {
+                  <div class="lib-progress">
+                    <div class="lib-progress-header">
+                      <span class="lib-progress-label">Progress</span>
+                      <span class="lib-progress-pct" [class.lib-progress-pct--done]="isCompleted(item.resource._id ?? '')">
+                        {{ getProgressPct(item.resource._id ?? '') }}%
+                      </span>
+                    </div>
+                    <app-progress-bar [pct]="getProgressPct(item.resource._id ?? '')" />
+                  </div>
+                }
+
+                <button class="btn btn--primary btn--sm lib-open-btn" (click)="openResource(item.resource)">
+                  {{ openLabel(item) }}
+                </button>
+              </div>
+            </article>
+          }
+        </div>
+      }
+
+      <!-- ── Saved Free Resources ────────────────────────────────────────────── -->
+      @if (savedFree().length > 0) {
+        <div class="lib-section-header" [class.lib-section-header--mt]="purchased().length > 0">
+          <h2 class="lib-section-title">Saved Free Resources</h2>
+          <span class="lib-section-count">{{ savedFree().length }}</span>
+        </div>
+        <div class="library-grid">
+          @for (item of savedFree(); track item.resource._id) {
+            <article class="lib-card">
+              <div class="lib-cover">
+                @if (item.resource.thumbnailUrl) {
+                  <img [src]="item.resource.thumbnailUrl" [alt]="item.resource.title" class="lib-cover-img" loading="lazy" />
+                } @else {
+                  <div class="lib-cover-placeholder" [attr.data-type]="item.resource.type">
+                    <span>{{
+                      item.resource.type === 'PDF'             ? '&#128196;' :
+                      item.resource.type === 'MULTIPLE_CHOICE' ? '&#10003;'  :
+                      item.resource.type === 'BUNDLE'          ? '&#128230;' :
+                                                                 '&#128276;'
+                    }}</span>
+                  </div>
+                }
+                <span class="lib-saved-badge">Free</span>
+                @if (isCompleted(item.resource._id ?? '')) {
+                  <span class="lib-completed-badge">&#10003; Completed</span>
+                }
+              </div>
+              <div class="lib-body">
+                <div class="lib-badges">
+                  <span class="lib-type-badge">{{ typeBadge(item.resource.type) }}</span>
+                </div>
+                <h3 class="lib-title">{{ item.resource.title }}</h3>
+                <p class="lib-desc">{{ item.resource.description }}</p>
+
+                @if (item.resource.type !== 'BUNDLE') {
+                  <div class="lib-progress">
+                    <div class="lib-progress-header">
+                      <span class="lib-progress-label">Progress</span>
+                      <span class="lib-progress-pct" [class.lib-progress-pct--done]="isCompleted(item.resource._id ?? '')">
+                        {{ getProgressPct(item.resource._id ?? '') }}%
+                      </span>
+                    </div>
+                    <app-progress-bar [pct]="getProgressPct(item.resource._id ?? '')" />
+                  </div>
+                }
+
+                <div class="lib-actions">
+                  <button class="btn btn--primary btn--sm lib-open-btn" (click)="openResource(item.resource)">
+                    {{ openLabel(item) }}
+                  </button>
+                  <button class="lib-unsave-btn" type="button" title="Remove from library" (click)="requestRemove(item)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      }
+
+    }
+  </div>
+</section>
+
+<!-- ─── Remove Confirmation Modal ───────────────────────────────────────────── -->
+@if (pendingRemoveItem()) {
+  <div class="lib-confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="lib-confirm-title" (click)="cancelRemove()">
+    <div class="lib-confirm-modal" (click)="$event.stopPropagation()">
+      <p class="lib-confirm-title" id="lib-confirm-title">Remove from Library?</p>
+      <p class="lib-confirm-body">
+        "<strong>{{ pendingRemoveItem()!.resource.title }}</strong>" will be removed from your library.
+        You can add it back at any time.
+      </p>
+      <div class="lib-confirm-actions">
+        <button class="lib-confirm-btn lib-confirm-btn--cancel" type="button" (click)="cancelRemove()" [disabled]="removing()">
+          Cancel
+        </button>
+        <button class="lib-confirm-btn lib-confirm-btn--remove" type="button" (click)="confirmRemove()" [disabled]="removing()">
+          {{ removing() ? 'Removing…' : 'Remove' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

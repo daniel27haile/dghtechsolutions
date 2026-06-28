@@ -7,13 +7,24 @@ const errorHandler = require('./middleware/errorHandler');
 const { apiLimiter } = require('./middleware/rateLimiter');
 
 // Import routes
-const authRoutes = require('./routes/auth');
-const projectRoutes = require('./routes/projects');
-const serviceRoutes = require('./routes/services');
+const authRoutes       = require('./routes/auth');
+const projectRoutes    = require('./routes/projects');
+const serviceRoutes    = require('./routes/services');
 const siteContentRoutes = require('./routes/siteContent');
-const contactRoutes = require('./routes/contact');
-const analyticsRoutes = require('./routes/analytics');
-const settingsRoutes = require('./routes/settings');
+const contactRoutes    = require('./routes/contact');
+const analyticsRoutes  = require('./routes/analytics');
+const settingsRoutes   = require('./routes/settings');
+const resourceRoutes   = require('./routes/resources');
+const userAuthRoutes   = require('./routes/userAuth');
+const paymentRoutes    = require('./routes/payments');
+const uploadRoutes     = require('./routes/upload');
+const reviewRoutes     = require('./routes/reviews');
+const progressRoutes   = require('./routes/progress');
+const cartRoutes       = require('./routes/cart');
+const couponRoutes     = require('./routes/coupons');
+const squareRoutes     = require('./routes/square');
+const payoutRoutes     = require('./routes/payouts');
+const publisherRoutes  = require('./routes/publishers');
 
 const app = express();
 
@@ -46,6 +57,10 @@ const corsOptions = process.env.NODE_ENV === 'production'
 
 app.use(cors(corsOptions));
 
+// Stripe webhook needs raw body — must be mounted BEFORE json body parser
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+// Square webhook uses JSON body (parsed separately per route)
+
 // Body parsers
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: false, limit: '10kb' }));
@@ -70,7 +85,18 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/content', siteContentRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/analytics', analyticsRoutes);
-app.use('/api/settings', settingsRoutes);
+app.use('/api/settings',  settingsRoutes);
+app.use('/api/resources', resourceRoutes);
+app.use('/api/users',     userAuthRoutes);
+app.use('/api/payments',  paymentRoutes);
+app.use('/api/upload',    uploadRoutes);
+app.use('/api/reviews',    reviewRoutes);
+app.use('/api/progress',   progressRoutes);
+app.use('/api/cart',       cartRoutes);
+app.use('/api/coupons',    couponRoutes);
+app.use('/api/square',     squareRoutes);
+app.use('/api/payouts',    payoutRoutes);
+app.use('/api/publishers', publisherRoutes);
 
 // 404 handler
 app.use((req, res) => {

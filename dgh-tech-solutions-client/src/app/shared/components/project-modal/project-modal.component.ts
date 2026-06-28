@@ -6,6 +6,8 @@ import {
   OnChanges,
   OnDestroy,
   HostListener,
+  ViewChild,
+  ElementRef,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Project } from '../../../core/models';
@@ -21,8 +23,16 @@ export class ProjectModalComponent implements OnChanges, OnDestroy {
   @Input() project: Project | null = null;
   @Output() closed = new EventEmitter<void>();
 
+  @ViewChild('closeBtn') closeBtnRef?: ElementRef<HTMLButtonElement>;
+
   ngOnChanges(): void {
-    document.body.style.overflow = this.project ? 'hidden' : '';
+    if (this.project) {
+      document.body.style.overflow = 'hidden';
+      // Move focus to close button once the modal DOM has rendered
+      setTimeout(() => this.closeBtnRef?.nativeElement.focus(), 40);
+    } else {
+      document.body.style.overflow = '';
+    }
   }
 
   ngOnDestroy(): void {

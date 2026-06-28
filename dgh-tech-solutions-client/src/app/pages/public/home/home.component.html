@@ -1,50 +1,139 @@
-<!-- ─── HERO ──────────────────────────────────────────────────────────────── -->
-<section class="hero" aria-label="Hero">
-  <div class="hero-inner">
-    <div class="hero-content">
-      <p class="hero-eyebrow">
-        {{ hero()?.metadata?.['badge'] || 'Trusted Technology Partner' }}
-      </p>
-      <h1>
-        {{ hero()?.title || 'Building Digital Products That Perform' }}
-      </h1>
-      <p class="hero-sub">
-        {{ hero()?.subtitle || 'DGH Tech Solutions delivers world-class web development, mobile apps, and cloud services. From MVPs to enterprise-grade applications.' }}
-      </p>
-      <div class="hero-actions">
-        <a [routerLink]="hero()?.primaryButtonUrl || '/contact'" class="btn btn-hero-primary">
-          {{ hero()?.primaryButtonText || 'Start a Project' }}
-        </a>
-        <a [routerLink]="hero()?.secondaryButtonUrl || '/services'" class="btn btn-hero-outline">
-          {{ hero()?.secondaryButtonText || 'Our Services' }}
-        </a>
-      </div>
-    </div>
+<!-- ═══ 1. HERO ═══════════════════════════════════════════════════════════════ -->
+<section
+  class="hero"
+  aria-label="Hero"
+  (mouseenter)="pauseHero()"
+  (mouseleave)="resumeHero()"
+>
+  <div class="container">
+    <div class="hero-inner">
 
-    <!-- Hero visual — image from CMS or decorative code card fallback -->
-    <div class="hero-visual" aria-hidden="true">
-      @if (hero()?.imageUrl) {
-        <img class="hero-img" [src]="hero()!.imageUrl!" alt="" />
-      } @else {
-        <div class="code-card">
-          <div class="code-bar">
-            <span class="dot-red"></span>
-            <span class="dot-yellow"></span>
-            <span class="dot-green"></span>
-            <span class="code-filename">dgh.config.ts</span>
-          </div>
-          <pre><code><span class="kw">const</span> <span class="fn">dgh</span> = &#123;
-  <span class="key">name</span>:    <span class="str">'DGH Tech Solutions'</span>,
-  <span class="key">stack</span>:   [<span class="str">'Angular'</span>, <span class="str">'Node.js'</span>, <span class="str">'MongoDB'</span>],
-  <span class="key">mission</span>: <span class="str">'Build. Scale. Deliver.'</span>,
-  <span class="key">ready</span>:   <span class="bool">true</span>,
-&#125;</code></pre>
+      <!-- Left: animated content ─────────────────────────────────────────── -->
+      <div class="hero-content">
+        <p class="hero-eyebrow">Trusted Technology Partner</p>
+
+        <div class="hero-headline-wrap" aria-live="polite" aria-atomic="true">
+          @for (svc of heroServices; track svc.service; let i = $index) {
+            <h1
+              class="hero-phrase"
+              [class.hero-phrase--active]="activePhrase() === i"
+              [attr.aria-hidden]="activePhrase() !== i"
+            >
+              {{ svc.verb }} with <span class="hero-accent">{{ svc.service }}</span>
+            </h1>
+          }
         </div>
-      }
+
+        <p class="hero-sub">
+          We build modern web apps, mobile applications, AI-powered tools, and
+          cloud-ready digital solutions for growing businesses.
+        </p>
+
+        <div class="hero-actions">
+          <a routerLink="/contact" class="btn-cta btn-cta--primary">
+            Get in Touch
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+          <a routerLink="/services" class="btn-cta btn-cta--outline">Our Services</a>
+        </div>
+
+        <!-- Trust row -->
+        <div class="hero-trust" aria-label="Key capabilities">
+          @for (t of trustItems; track t.label; let last = $last) {
+            <div class="ht-item">
+              <span class="ht-icon" [innerHTML]="icon(t.icon, 13)"></span>
+              <span>{{ t.label }}</span>
+            </div>
+            @if (!last) {
+              <span class="ht-div" aria-hidden="true"></span>
+            }
+          }
+        </div>
+      </div>
+
+      <!-- Right: hero visual ─────────────────────────────────────────────── -->
+      <div class="hero-visual" aria-hidden="true">
+        @if (hero()?.imageUrl) {
+          <img class="hero-img" [src]="hero()!.imageUrl!" alt="" />
+        } @else {
+          <div class="hero-placeholder">
+            <!-- Main dashboard panel -->
+            <div class="hdash">
+              <div class="hdash__header">
+                <span class="hdash__dot hdash__dot--r"></span>
+                <span class="hdash__dot hdash__dot--y"></span>
+                <span class="hdash__dot hdash__dot--g"></span>
+                <span class="hdash__title">DGH Platform</span>
+                <span class="hdash__status">
+                  <span class="hdash__live-dot"></span>Live
+                </span>
+              </div>
+
+              <div class="hdash__kpis">
+                <div class="hdash__kpi">
+                  <span class="hdash__kpi-val">98%</span>
+                  <span class="hdash__kpi-lbl">Uptime</span>
+                </div>
+                <div class="hdash__kpi">
+                  <span class="hdash__kpi-val">50+</span>
+                  <span class="hdash__kpi-lbl">Projects</span>
+                </div>
+                <div class="hdash__kpi">
+                  <span class="hdash__kpi-val">30+</span>
+                  <span class="hdash__kpi-lbl">Clients</span>
+                </div>
+              </div>
+
+              <div class="hdash__chart" aria-hidden="true">
+                <div class="hdash__bar-wrap">
+                  <span class="hdash__bar" style="--h:45%"></span>
+                </div>
+                <div class="hdash__bar-wrap">
+                  <span class="hdash__bar" style="--h:62%"></span>
+                </div>
+                <div class="hdash__bar-wrap">
+                  <span class="hdash__bar" style="--h:50%"></span>
+                </div>
+                <div class="hdash__bar-wrap">
+                  <span class="hdash__bar" style="--h:78%"></span>
+                </div>
+                <div class="hdash__bar-wrap">
+                  <span class="hdash__bar" style="--h:68%"></span>
+                </div>
+                <div class="hdash__bar-wrap">
+                  <span class="hdash__bar hdash__bar--hi" style="--h:92%"></span>
+                </div>
+              </div>
+
+              <div class="hdash__footer">
+                <span class="hdash__tag">Angular</span>
+                <span class="hdash__tag">Node.js</span>
+                <span class="hdash__tag">AWS</span>
+                <span class="hdash__tag">AI / ML</span>
+              </div>
+            </div>
+
+            <!-- Floating badges -->
+            <div class="hdash-badge hdash-badge--a">
+              <span class="hdash-badge__dot hdash-badge__dot--green"></span>
+              Deployed to AWS
+            </div>
+            <div class="hdash-badge hdash-badge--b">
+              <span class="hdash-badge__dot hdash-badge__dot--blue"></span>
+              AI-Ready
+            </div>
+            <div class="hdash-badge hdash-badge--c">
+              <span class="hdash-badge__dot hdash-badge__dot--purple"></span>
+              Secure &amp; Scalable
+            </div>
+          </div>
+        }
+      </div>
+
     </div>
   </div>
 
-  <!-- Stats bar -->
+  <!-- Stats bar ─────────────────────────────────────────────────────────── -->
   <div class="stats-bar" aria-label="Company statistics">
     <div class="stats-inner">
       @for (s of stats(); track s.label) {
@@ -57,31 +146,82 @@
   </div>
 </section>
 
-<!-- ─── SERVICES PREVIEW ──────────────────────────────────────────────────── -->
-<section class="section" aria-labelledby="services-heading">
+<!-- ═══ 2. FEATURED SERVICES ═════════════════════════════════════════════════ -->
+<section class="hm-section" aria-labelledby="feat-svc-heading">
   <div class="container">
     <app-section-title
       [subtitle]="servicesPreview()?.subtitle || 'What We Do'"
-      [title]="servicesPreview()?.title || 'Our Core Services'"
-      [description]="servicesPreview()?.body || 'Comprehensive digital solutions tailored to your business needs and growth goals.'"
+      [title]="servicesPreview()?.title || 'Core Services'"
+      [description]="servicesPreview()?.body || 'End-to-end digital products designed to perform at scale from day one.'"
       [center]="true"
-      headingId="services-heading"
+      headingId="feat-svc-heading"
     />
-    <div class="services-grid" role="list">
-      @for (svc of services(); track svc._id) {
-        <div role="listitem">
-          <app-service-card [service]="svc" />
-        </div>
+    <div class="feat-grid" role="list">
+      @for (svc of featuredServices; track svc.title) {
+        <article class="feat-card" role="listitem">
+          <div class="feat-icon" [innerHTML]="icon(svc.icon, 26)"></div>
+          <h3>{{ svc.title }}</h3>
+          <p>{{ svc.description }}</p>
+          <div class="feat-tags" [attr.aria-label]="svc.title + ' technologies'">
+            @for (tag of svc.tags; track tag) {
+              <span class="feat-tag">{{ tag }}</span>
+            }
+          </div>
+        </article>
       }
     </div>
-    <div class="center-action">
+    <div class="hm-center">
       <a routerLink="/services" class="btn btn--outline">View All Services</a>
     </div>
   </div>
 </section>
 
-<!-- ─── TECH STACK ────────────────────────────────────────────────────────── -->
-<section class="section stack-section" aria-labelledby="stack-heading">
+<!-- ═══ 3. WHY CHOOSE DGH ════════════════════════════════════════════════════ -->
+<section class="hm-section hm-section--gray" aria-labelledby="why-heading">
+  <div class="container">
+    <app-section-title
+      subtitle="Why Choose Us"
+      title="Why Choose DGH Tech Solutions"
+      description="We combine technical depth with a clear focus on delivering software that actually works in production."
+      [center]="true"
+      headingId="why-heading"
+    />
+    <div class="why-grid" role="list">
+      @for (card of whyCards; track card.title) {
+        <div class="why-card" role="listitem">
+          <div class="why-icon" [innerHTML]="icon(card.icon, 22)"></div>
+          <h3>{{ card.title }}</h3>
+          <p>{{ card.body }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 4. OUR PROCESS ═══════════════════════════════════════════════════════ -->
+<section class="hm-section" aria-labelledby="process-heading">
+  <div class="container">
+    <app-section-title
+      subtitle="How We Work"
+      title="Our Development Process"
+      description="A structured, repeatable approach that keeps projects on track from discovery to deployment."
+      [center]="true"
+      headingId="process-heading"
+    />
+    <div class="process-row" role="list">
+      @for (step of processSteps; track step.num) {
+        <div class="process-step" role="listitem">
+          <div class="ps-num" aria-hidden="true">{{ step.num }}</div>
+          <div class="ps-label">{{ step.label }}</div>
+          <p class="ps-desc">{{ step.desc }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 5. TECH STACK ════════════════════════════════════════════════════════ -->
+<section class="hm-section hm-section--gray" aria-labelledby="stack-heading">
   <div class="container">
     <app-section-title
       subtitle="Our Toolkit"
@@ -93,7 +233,8 @@
     <div class="stack-grid" role="list">
       @for (group of techGroups; track group.label) {
         <div class="stack-card" role="listitem">
-          <h3 class="stack-group-label">{{ group.label }}</h3>
+          <h3 class="stack-label">{{ group.label }}</h3>
+          <p class="stack-desc">{{ group.desc }}</p>
           <div class="stack-tags" [attr.aria-label]="group.label + ' technologies'">
             @for (t of group.items; track t) {
               <span class="stack-tag">{{ t }}</span>
@@ -105,91 +246,113 @@
   </div>
 </section>
 
-<!-- ─── FEATURED PROJECTS ─────────────────────────────────────────────────── -->
-<section class="section section--gray" aria-labelledby="projects-heading">
+<!-- ═══ 6. PROJECT EXAMPLES ══════════════════════════════════════════════════ -->
+<section class="hm-section" aria-labelledby="projects-heading">
   <div class="container">
     <app-section-title
       [subtitle]="projectsPreview()?.subtitle || 'Our Work'"
-      [title]="projectsPreview()?.title || 'Featured Projects'"
-      [description]="projectsPreview()?.body || 'Real-world solutions built for clients across industries.'"
+      [title]="projectsPreview()?.title || 'Recent Project Examples'"
+      [description]="projectsPreview()?.body || 'A sample of the types of solutions we\'ve built — each tailored to specific business needs.'"
       [center]="true"
       headingId="projects-heading"
     />
-    <app-project-carousel />
-    <div class="center-action project-cta">
+    <div class="proj-grid" role="list">
+      @for (ex of projectExamples; track ex.title) {
+        <article class="proj-card" role="listitem">
+          <h3>{{ ex.title }}</h3>
+          <p>{{ ex.desc }}</p>
+          <div class="proj-tags">
+            @for (tag of ex.tags; track tag) {
+              <span class="proj-tag">{{ tag }}</span>
+            }
+          </div>
+          @if (ex.link) {
+            <a [routerLink]="ex.link" class="proj-link">Learn More &rarr;</a>
+          }
+        </article>
+      }
+    </div>
+    <div class="hm-center">
       <a routerLink="/contact" class="btn btn--primary">Start Your Project &rarr;</a>
     </div>
   </div>
 </section>
 
-<!-- ─── ABOUT PREVIEW (dark) ─────────────────────────────────────────────── -->
-<section class="section section--dark about-section" aria-labelledby="about-heading">
-  <div class="container">
-    <div class="about-grid">
-      <div class="about-text">
-        <p class="eyebrow-light">{{ about()?.subtitle || 'About DGH Tech Solutions' }}</p>
-        <h2 id="about-heading">{{ about()?.title || 'A Technology Partner Built for Business Growth' }}</h2>
-        <p>{{ about()?.body || 'DGH Tech Solutions is a technology company focused on building high-quality web applications, mobile apps, cloud-based platforms, and AI-ready digital solutions. We combine deep technical expertise with a commitment to clean architecture, security, and long-term maintainability.' }}</p>
-        <div class="highlight-list" role="list">
-          @for (h of highlights(); track h) {
-            <div class="highlight-item" role="listitem">
-              <span class="check" aria-hidden="true">&#10003;</span>
-              <span>{{ h }}</span>
-            </div>
-          }
-        </div>
-        <a routerLink="/about" class="btn btn--outline mt-8">About Our Company &rarr;</a>
-      </div>
-      <div class="about-metrics" aria-label="Key metrics">
-        <div class="metric-card">
-          <div class="m-number" aria-label="50 plus projects delivered">50+</div>
-          <div class="m-label" aria-hidden="true">Projects Delivered</div>
-        </div>
-        <div class="metric-card">
-          <div class="m-number" aria-label="30 plus happy clients">30+</div>
-          <div class="m-label" aria-hidden="true">Happy Clients</div>
-        </div>
-        <div class="metric-card">
-          <div class="m-number" aria-label="5 plus years experience">5+</div>
-          <div class="m-label" aria-hidden="true">Years Experience</div>
-        </div>
-        <div class="metric-card">
-          <div class="m-number" aria-label="99 percent satisfaction rate">99%</div>
-          <div class="m-label" aria-hidden="true">Satisfaction Rate</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ─── WHY CHOOSE DGH ────────────────────────────────────────────────────── -->
-<section class="section" aria-labelledby="values-heading">
+<!-- ═══ 7. INDUSTRIES ════════════════════════════════════════════════════════ -->
+<section class="hm-section hm-section--gray" aria-labelledby="ind-heading">
   <div class="container">
     <app-section-title
-      subtitle="Why Choose Us"
-      title="The DGH Difference"
-      description="We go beyond writing code — we build partnerships that drive results."
+      subtitle="Who We Work With"
+      title="Industries We Serve"
+      description="Experience across diverse sectors — we understand the specific challenges each industry faces."
       [center]="true"
-      headingId="values-heading"
+      headingId="ind-heading"
     />
-    <div class="values-grid" role="list">
-      @for (v of values; track v.title) {
-        <div class="value-card" role="listitem">
-          <div class="value-icon" aria-hidden="true">{{ v.icon }}</div>
-          <h3>{{ v.title }}</h3>
-          <p>{{ v.body }}</p>
+    <div class="ind-grid">
+      @for (ind of industries; track ind.label) {
+        <div class="ind-card">
+          <span class="ind-icon" [innerHTML]="icon(ind.icon, 20)"></span>
+          <span class="ind-label">{{ ind.label }}</span>
         </div>
       }
     </div>
   </div>
 </section>
 
-<!-- ─── CTA ───────────────────────────────────────────────────────────────── -->
+<!-- ═══ 8. TECHNOLOGIES (Resources Feature) ══════════════════════════════════ -->
+<section class="hm-section resources-feature" aria-labelledby="resources-heading">
+  <div class="container">
+    <div class="resources-inner">
+      <div class="resources-text">
+        <p class="eyebrow-colored">Learning Hub</p>
+        <h2 id="resources-heading">Developer Resources &amp; Study Materials</h2>
+        <p>Structured guides, practice questions, and reference materials for developers — covering cloud certifications, full-stack development, and software engineering fundamentals.</p>
+        <ul class="resources-bullets" aria-label="Resource types">
+          <li>PDF study guides and technical references</li>
+          <li>MCQ practice sets for certification prep</li>
+          <li>Flashcard decks for key concepts</li>
+        </ul>
+        <a routerLink="/resources" class="btn btn--primary mt-8">Browse Resources &rarr;</a>
+      </div>
+      <div class="resources-cards" aria-hidden="true">
+        <div class="res-card">
+          <div class="res-card__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <div>
+            <span class="res-type">PDF Guide</span>
+            <span class="res-name">AWS Cloud Practitioner</span>
+          </div>
+        </div>
+        <div class="res-card">
+          <div class="res-card__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div>
+            <span class="res-type">MCQ Practice</span>
+            <span class="res-name">Full-Stack Fundamentals</span>
+          </div>
+        </div>
+        <div class="res-card">
+          <div class="res-card__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <div>
+            <span class="res-type">Flashcards</span>
+            <span class="res-name">DevOps &amp; CI/CD Concepts</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 9. FINAL CTA ══════════════════════════════════════════════════════════ -->
 <app-cta-section
-  [heading]="cta()?.title || 'Ready to Start Your Next Project?'"
-  [sub]="cta()?.subtitle || 'Tell us what you\'re building and our team will put together a clear plan of action.'"
-  [primaryLabel]="cta()?.primaryButtonText || 'Contact Our Team'"
+  [heading]="cta()?.title || 'Ready to build your next project?'"
+  [sub]="cta()?.subtitle || 'Let\'s discuss your business goals and turn them into reliable, scalable software.'"
+  [primaryLabel]="cta()?.primaryButtonText || 'Start Your Project'"
   [primaryLink]="cta()?.primaryButtonUrl || '/contact'"
-  [secondaryLabel]="cta()?.secondaryButtonText || 'View Our Services'"
-  [secondaryLink]="cta()?.secondaryButtonUrl || '/services'"
+  [secondaryLabel]="cta()?.secondaryButtonText || 'Contact Us'"
+  [secondaryLink]="cta()?.secondaryButtonUrl || '/contact'"
 />

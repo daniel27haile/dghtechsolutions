@@ -15,11 +15,36 @@
       <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" (click)="closeMenu()">Home</a></li>
       <li><a routerLink="/services" routerLinkActive="active" (click)="closeMenu()">Services</a></li>
       <li><a routerLink="/about" routerLinkActive="active" (click)="closeMenu()">About</a></li>
+      <li><a routerLink="/resources" routerLinkActive="active" (click)="closeMenu()">Resources</a></li>
       <li><a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()">Contact</a></li>
-      <li class="cta-li">
-        <a routerLink="/contact" class="btn btn--primary btn--sm" (click)="closeMenu()">Get Started</a>
-      </li>
+      @if (userAuth.isLoggedIn()) {
+        <li><a routerLink="/my-library" routerLinkActive="active" (click)="closeMenu()">My Library</a></li>
+        <li class="cta-li">
+          <button class="btn btn--outline btn--sm nav-logout-btn" (click)="logout()">Sign Out</button>
+        </li>
+      } @else {
+        <li><a routerLink="/login" routerLinkActive="active" (click)="closeMenu()">Sign In</a></li>
+        <li class="cta-li">
+          <a routerLink="/contact" class="btn btn--primary btn--sm" (click)="closeMenu()">Get Started</a>
+        </li>
+      }
     </ul>
+
+    <!-- Cart icon (desktop + mobile) -->
+    <button
+      class="nav-cart"
+      type="button"
+      aria-label="Open shopping cart"
+      (click)="cartSvc.openDrawer()"
+    >
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+      </svg>
+      @if (cartSvc.cart().itemCount > 0) {
+        <span class="nav-cart__badge" [attr.aria-label]="cartSvc.cart().itemCount + ' items in cart'">{{ cartSvc.cart().itemCount }}</span>
+      }
+    </button>
 
     <button
       class="hamburger"

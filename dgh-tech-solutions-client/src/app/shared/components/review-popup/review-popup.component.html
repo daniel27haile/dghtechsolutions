@@ -1,0 +1,83 @@
+<!-- Overlay -->
+<div class="rp-overlay" (click)="onOverlayClick($event)" role="dialog" aria-modal="true" aria-labelledby="rp-title">
+
+  <!-- Panel -->
+  <div class="rp-panel">
+
+    <!-- Header -->
+    <div class="rp-header">
+      <div class="rp-header-icon" aria-hidden="true">&#11088;</div>
+      <div class="rp-header-text">
+        <h2 class="rp-title" id="rp-title">How was your experience?</h2>
+        @if (resourceTitle) {
+          <p class="rp-subtitle">{{ resourceTitle }}</p>
+        }
+      </div>
+      <button class="rp-close" type="button" (click)="close()" aria-label="Close review form">&#10005;</button>
+    </div>
+
+    @if (successMsg()) {
+      <!-- Success state -->
+      <div class="rp-success">
+        <div class="rp-success__icon">&#10003;</div>
+        <p class="rp-success__text">{{ successMsg() }}</p>
+      </div>
+    } @else {
+      <!-- Form -->
+      <div class="rp-body">
+        <!-- Star selector -->
+        <div class="rp-field">
+          <label class="rp-label">Your rating <span class="rp-required">*</span></label>
+          <div class="rp-stars-wrap">
+            <app-star-rating
+              [rating]="selectedRating()"
+              mode="input"
+              size="lg"
+              (ratingChange)="onRatingChange($event)"
+            />
+            @if (selectedRating() > 0) {
+              <span class="rp-rating-label">{{ ratingLabel() }}</span>
+            }
+          </div>
+        </div>
+
+        <!-- Comment -->
+        <div class="rp-field">
+          <label class="rp-label" for="rp-comment">
+            Your review <span class="rp-optional">(optional)</span>
+          </label>
+          <textarea
+            id="rp-comment"
+            class="rp-textarea"
+            rows="4"
+            placeholder="Share what you found most helpful, what could be better, or anything else..."
+            maxlength="2000"
+            [value]="comment()"
+            (input)="onCommentInput($event)"
+          ></textarea>
+          <span class="rp-char-count">{{ comment().length }} / 2000</span>
+        </div>
+
+        @if (errorMsg()) {
+          <p class="rp-error" role="alert">{{ errorMsg() }}</p>
+        }
+
+        <!-- Actions -->
+        <div class="rp-actions">
+          <button class="btn btn--outline" type="button" (click)="close()" [disabled]="submitting()">
+            Maybe later
+          </button>
+          <button
+            class="btn btn--primary"
+            type="button"
+            (click)="submit()"
+            [disabled]="submitting() || selectedRating() < 1"
+          >
+            {{ submitting() ? 'Submitting…' : 'Submit Review' }}
+          </button>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

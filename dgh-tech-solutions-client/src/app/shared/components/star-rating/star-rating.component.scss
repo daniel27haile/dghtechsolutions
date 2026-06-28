@@ -1,0 +1,62 @@
+.star-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  line-height: 1;
+  flex-wrap: nowrap;
+
+  // Size variants
+  &--sm { font-size: .8rem; gap: 1px; }
+  &--md { font-size: 1rem;  gap: 2px; }
+  &--lg { font-size: 1.3rem; gap: 2px; }
+
+  &--input { cursor: pointer; }
+}
+
+.star {
+  position: relative;
+  display: inline-block;
+  line-height: 1;
+
+  &--clickable {
+    cursor: pointer;
+    transition: transform .1s ease;
+
+    &:hover { transform: scale(1.2); }
+    &:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; border-radius: 2px; }
+  }
+}
+
+.star-empty {
+  display: block;
+  color: #d1d5db;
+}
+
+// Muted variant — used when there are no reviews yet
+.star-rating--muted {
+  .star-empty { color: #e2e8f0; }
+}
+
+.star-filled {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  color: #f59e0b;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.star-value {
+  font-size: .78em;
+  font-weight: 700;
+  color: #374151;
+  margin-left: .25rem;
+  letter-spacing: -.01em;
+}
+
+.star-count {
+  font-size: .72em;
+  color: #9ca3af;
+  margin-left: .15rem;
+}

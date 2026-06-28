@@ -1,0 +1,41 @@
+<div
+  class="star-rating star-rating--{{ size }}"
+  [class.star-rating--input]="mode === 'input'"
+  [class.star-rating--muted]="muted"
+  [attr.role]="mode === 'input' ? 'radiogroup' : null"
+  [attr.aria-label]="mode === 'input' ? 'Select a rating' : null"
+  (mouseleave)="leave()"
+>
+  @for (star of stars(); track star.n) {
+    <span
+      class="star"
+      [class.star--clickable]="mode === 'input'"
+      (mouseenter)="hover(star.n)"
+      (click)="select(star.n)"
+      [attr.role]="mode === 'input' ? 'radio' : null"
+      [attr.aria-checked]="mode === 'input' ? (_rating() === star.n) : null"
+      [attr.aria-label]="mode === 'input' ? (star.n + ' star' + (star.n > 1 ? 's' : '')) : null"
+      [attr.tabindex]="mode === 'input' ? 0 : null"
+      (keydown.enter)="select(star.n)"
+      (keydown.space)="select(star.n)"
+    >
+      <!-- Empty star (base layer) -->
+      <span class="star-empty" aria-hidden="true">&#9734;</span>
+      <!-- Filled star (overlay, clipped to fill %) -->
+      @if (star.fill > 0) {
+        <span
+          class="star-filled"
+          aria-hidden="true"
+          [style.clip-path]="'inset(0 ' + (100 - star.fill) + '% 0 0)'"
+        >&#9733;</span>
+      }
+    </span>
+  }
+
+  @if (mode === 'display' && _rating() > 0) {
+    <span class="star-value" aria-hidden="true">{{ displayRating() }}</span>
+  }
+  @if (mode === 'display' && count > 0) {
+    <span class="star-count" aria-hidden="true">({{ count }})</span>
+  }
+</div>

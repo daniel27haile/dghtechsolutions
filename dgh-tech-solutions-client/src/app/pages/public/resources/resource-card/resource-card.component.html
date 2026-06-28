@@ -1,0 +1,179 @@
+<article
+  class="res-card"
+  [class.res-card--active]="selected"
+  [attr.aria-label]="resource.title"
+  (click)="viewDetails.emit()"
+  role="button"
+  tabindex="0"
+  (keydown.enter)="viewDetails.emit()"
+>
+
+  <!-- ── Thumbnail ──────────────────────────────────────────────────────────── -->
+  <div class="res-card__thumb" role="presentation">
+    @if (resource.thumbnailUrl) {
+      <img
+        class="res-card__thumb-img"
+        [src]="resource.thumbnailUrl"
+        [alt]="resource.title + ' thumbnail'"
+        loading="lazy"
+        width="400"
+        height="225"
+      />
+    } @else {
+      <div class="res-card__thumb-placeholder {{ typeColorClass(resource.type) }}" aria-hidden="true">
+        <span class="res-card__thumb-char">{{ resource.title[0].toUpperCase() }}</span>
+        <span class="res-card__thumb-type">{{ typePill(resource.type) }}</span>
+        <span class="res-card__thumb-brand">DGH</span>
+      </div>
+    }
+    @if (resource.isFeatured) {
+      <span class="res-card__featured-badge" aria-label="Featured resource">Featured</span>
+    }
+    <button
+      class="res-card__share"
+      type="button"
+      [attr.aria-label]="'Share ' + resource.title"
+      (click)="shareResource($event)"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+        <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- ── Body ───────────────────────────────────────────────────────────────── -->
+  <div class="res-card__body" role="presentation">
+
+    <!-- Marketing label chips (Best Seller, Hot Selling, New, Recommended) -->
+    @if (activeLabels.length > 0) {
+      <div class="res-card__labels">
+        @for (label of activeLabels.slice(0, 2); track label) {
+          <span class="res-card__label-chip {{ labelChipClass(label) }}">{{ label }}</span>
+        }
+      </div>
+    }
+
+    <!-- Badge row: type + access state -->
+    <div class="res-card__badges">
+      <span class="res-card__type-pill {{ typeColorClass(resource.type) }}">
+        {{ typePill(resource.type) }}
+      </span>
+      @if (accessBadgeLabel !== null) {
+        <span class="res-card__access-badge {{ accessBadgeClass }}">
+          {{ accessBadgeLabel }}
+        </span>
+      }
+    </div>
+
+    <!-- Title (2-line clamp) -->
+    <h3 class="res-card__title">{{ resource.title }}</h3>
+
+    <!-- Description (2-line clamp) -->
+    <p class="res-card__desc">{{ cleanDescription(resource.description) }}</p>
+
+    <!-- Stats row: rating · level · content count -->
+    <div class="res-card__stats" aria-label="Resource stats">
+      <app-star-rating
+        [rating]="hasRating ? (resource.averageRating ?? 0) : 0"
+        [muted]="!hasRating"
+        mode="display"
+        size="sm"
+      />
+      @if (hasRating) {
+        <!-- star component renders the number; we only add the review count -->
+        <span class="stat-muted">({{ reviewCountText }})</span>
+      } @else {
+        <span class="stat-muted">No reviews yet</span>
+      }
+
+      @if (resource.level) {
+        <span class="stat-sep" aria-hidden="true">·</span>
+        <span class="stat-val">{{ resource.level }}</span>
+      }
+
+      @if (contentStat) {
+        <span class="stat-sep" aria-hidden="true">·</span>
+        <span class="stat-muted">{{ contentStat }}</span>
+      }
+    </div>
+
+    <!-- Price block: shown for paid resources not yet purchased -->
+    @if (showPriceBlock) {
+      <div class="res-card__price-block" aria-label="Pricing">
+        @if (displayOldPrice) {
+          <span class="price-old">{{ displayOldPrice }}</span>
+        }
+        <span class="price-current">{{ displaySalePrice }}</span>
+        @if (displayDiscountPct) {
+          <span class="price-discount" [attr.aria-label]="displayDiscountPct + '% off'">{{ displayDiscountPct }}% OFF</span>
+        }
+      </div>
+    }
+
+  </div>
+
+  <!-- ── Footer actions ─────────────────────────────────────────────────────── -->
+  <div class="res-card__footer">
+    @if (showPriceBlock) {
+      <!-- Paid, not yet purchased -->
+      <button
+        class="res-card__act res-card__act--cart"
+        type="button"
+        [attr.aria-label]="'Add ' + resource.title + ' to cart'"
+        (click)="$event.stopPropagation(); addToCart.emit()"
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        Add to Cart
+      </button>
+      <button
+        class="res-card__act res-card__act--ghost"
+        type="button"
+        [attr.aria-label]="'Preview ' + resource.title"
+        (click)="$event.stopPropagation(); viewDetails.emit()"
+      >Preview</button>
+    } @else if (showSaveButton) {
+      <!-- Free resource: save / in-library + open -->
+      @if (saved) {
+        <button
+          class="res-card__act res-card__act--saved"
+          type="button"
+          aria-label="Remove from library"
+          (click)="$event.stopPropagation(); removeFromLibrary.emit()"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          In Library
+        </button>
+      } @else {
+        <button
+          class="res-card__act res-card__act--save"
+          type="button"
+          aria-label="Save to library"
+          (click)="$event.stopPropagation(); saveToLibrary.emit()"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          Save Free
+        </button>
+      }
+      <button
+        class="res-card__act res-card__act--open"
+        type="button"
+        [attr.aria-label]="'Open ' + resource.title"
+        (click)="$event.stopPropagation(); primaryCta.emit()"
+      >Access Free</button>
+    } @else {
+      <!-- Purchased resource -->
+      <button
+        class="res-card__act res-card__act--open res-card__act--full"
+        type="button"
+        [attr.aria-label]="primaryLabel + ' ' + resource.title"
+        (click)="$event.stopPropagation(); primaryCta.emit()"
+      >
+        @if (progressStatus === 'completed') { Review Again }
+        @else if (progressStatus === 'in_progress' && progressPct > 0) { Continue }
+        @else { Open Resource }
+      </button>
+    }
+  </div>
+
+</article>

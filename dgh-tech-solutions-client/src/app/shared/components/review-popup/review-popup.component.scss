@@ -1,0 +1,223 @@
+// ─── Overlay ──────────────────────────────────────────────────────────────────
+.rp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .5);
+  z-index: 1100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  animation: fadeIn .2s ease;
+
+  @media (min-width: 560px) {
+    align-items: center;
+    padding: 1.5rem;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+// ─── Panel ────────────────────────────────────────────────────────────────────
+.rp-panel {
+  background: #fff;
+  width: 100%;
+  max-width: 520px;
+  border-radius: 20px 20px 0 0;
+  overflow: hidden;
+  animation: slideUp .28s ease;
+  box-shadow: 0 -4px 40px rgba(0,0,0,.18);
+
+  @media (min-width: 560px) {
+    border-radius: 20px;
+    animation: popIn .25s ease;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+  }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(.94) translateY(8px); }
+  to   { opacity: 1; transform: scale(1)   translateY(0); }
+}
+
+// ─── Header ───────────────────────────────────────────────────────────────────
+.rp-header {
+  display: flex;
+  align-items: flex-start;
+  gap: .85rem;
+  padding: 1.5rem 1.5rem 1.1rem;
+  border-bottom: 1px solid #f3f4f6;
+  position: relative;
+}
+
+.rp-header-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: .1rem;
+}
+
+.rp-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.rp-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 .2rem;
+}
+
+.rp-subtitle {
+  font-size: .82rem;
+  color: #6b7280;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rp-close {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: .8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, color .15s;
+  margin-top: .1rem;
+
+  &:hover { background: #e5e7eb; color: #111827; }
+  &:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+}
+
+// ─── Body ─────────────────────────────────────────────────────────────────────
+.rp-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.rp-field {
+  display: flex;
+  flex-direction: column;
+  gap: .45rem;
+}
+
+.rp-label {
+  font-size: .85rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.rp-required { color: #ef4444; margin-left: .15rem; }
+.rp-optional { font-weight: 400; color: #9ca3af; font-size: .8rem; }
+
+// ─── Star selector ────────────────────────────────────────────────────────────
+.rp-stars-wrap {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+.rp-rating-label {
+  font-size: .9rem;
+  font-weight: 700;
+  color: #f59e0b;
+}
+
+// ─── Comment textarea ─────────────────────────────────────────────────────────
+.rp-textarea {
+  width: 100%;
+  padding: .75rem 1rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: .9rem;
+  font-family: inherit;
+  color: #374151;
+  background: #fafafa;
+  resize: vertical;
+  min-height: 96px;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  box-sizing: border-box;
+
+  &::placeholder { color: #9ca3af; }
+  &:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.1); background: #fff; }
+}
+
+.rp-char-count {
+  font-size: .72rem;
+  color: #9ca3af;
+  text-align: right;
+}
+
+// ─── Error ────────────────────────────────────────────────────────────────────
+.rp-error {
+  font-size: .85rem;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: .6rem .85rem;
+  margin: 0;
+}
+
+// ─── Actions ──────────────────────────────────────────────────────────────────
+.rp-actions {
+  display: flex;
+  gap: .75rem;
+  justify-content: flex-end;
+  padding-top: .25rem;
+
+  @media (max-width: 400px) {
+    flex-direction: column-reverse;
+    .btn { width: 100%; justify-content: center; }
+  }
+}
+
+// ─── Success state ────────────────────────────────────────────────────────────
+.rp-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .75rem;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+
+  &__icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #d1fae5;
+    color: #059669;
+    font-size: 1.6rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__text {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+  }
+}

@@ -143,6 +143,22 @@ import { SettingsService } from '../../../core/services/settings.service';
               <input formControlName="footerText" class="form-control" />
             </div>
 
+            <div class="section-header">Publisher &amp; Payout Settings</div>
+            <div class="row-2">
+              <div class="form-group">
+                <label>Platform Fee % <span class="hint">(taken from each sale before publisher payout)</span></label>
+                <input formControlName="platformFeePercent" class="form-control" type="number" min="0" max="100" />
+              </div>
+              <div class="form-group">
+                <label>Minimum Payout ($)</label>
+                <input formControlName="payoutMinimumAmount" class="form-control" type="number" min="0" />
+              </div>
+            </div>
+            <div class="form-group" style="max-width:260px">
+              <label>Payout Waiting Period (days) <span class="hint">(between approved payouts)</span></label>
+              <input formControlName="payoutWaitingDays" class="form-control" type="number" min="0" />
+            </div>
+
             @if (errorMsg()) { <div class="alert-error">{{ errorMsg() }}</div> }
 
             <div class="form-actions">
@@ -217,8 +233,11 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
       instagram:       [''],
       facebook:        [''],
       youtube:         [''],
-      metaDescription: [''],
-      footerText:      [''],
+      metaDescription:       [''],
+      footerText:            [''],
+      platformFeePercent:    [20],
+      payoutMinimumAmount:   [20],
+      payoutWaitingDays:     [30],
     });
 
     // Live preview: update signals whenever the URL fields change
@@ -251,8 +270,11 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
             instagram:       d.socialLinks?.instagram ?? '',
             facebook:        d.socialLinks?.facebook  ?? '',
             youtube:         d.socialLinks?.youtube   ?? '',
-            metaDescription: d.metaDescription ?? '',
-            footerText:      d.footerText      ?? '',
+            metaDescription:       d.metaDescription ?? '',
+            footerText:            d.footerText      ?? '',
+            platformFeePercent:    (d as any).platformFeePercent   ?? 20,
+            payoutMinimumAmount:   (d as any).payoutMinimumAmount  ?? 20,
+            payoutWaitingDays:     (d as any).payoutWaitingDays    ?? 30,
           });
         }
         this.loading.set(false);
@@ -310,8 +332,11 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
         facebook:  v.facebook,
         youtube:   v.youtube,
       },
-      metaDescription: v.metaDescription,
-      footerText:      v.footerText,
+      metaDescription:       v.metaDescription,
+      footerText:            v.footerText,
+      platformFeePercent:    +v.platformFeePercent,
+      payoutMinimumAmount:   +v.payoutMinimumAmount,
+      payoutWaitingDays:     +v.payoutWaitingDays,
     };
     this.settingsSvc.update(payload).subscribe({
       next: () => {

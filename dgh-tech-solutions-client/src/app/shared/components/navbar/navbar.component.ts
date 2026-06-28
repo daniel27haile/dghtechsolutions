@@ -4,7 +4,9 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgOptimizedImage } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { SettingsService } from '../../../core/services/settings.service';
+import { SettingsService }  from '../../../core/services/settings.service';
+import { UserAuthService } from '../../../core/services/user-auth.service';
+import { CartService }     from '../../../core/services/cart.service';
 
 @Component({
   selector: 'app-navbar',
@@ -21,7 +23,12 @@ export class NavbarComponent implements OnInit {
 
   private destroyRef = inject(DestroyRef);
 
-  constructor(private settingsService: SettingsService) {}
+  cartSvc = inject(CartService);
+
+  constructor(
+    private settingsService: SettingsService,
+    public  userAuth:        UserAuthService,
+  ) {}
 
   ngOnInit(): void {
     // Trigger the initial HTTP fetch (no-op if already cached)
@@ -47,5 +54,10 @@ export class NavbarComponent implements OnInit {
 
   closeMenu(): void {
     this.menuOpen.set(false);
+  }
+
+  logout(): void {
+    this.userAuth.logout();
+    this.closeMenu();
   }
 }

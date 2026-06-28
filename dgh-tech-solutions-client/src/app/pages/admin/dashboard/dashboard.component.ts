@@ -1,7 +1,9 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
-import { forkJoin } from 'rxjs';
-import { RouterLink } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { Router, RouterLink } from '@angular/router';
 import { AnalyticsService } from '../../../core/services/analytics.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { ProjectService } from '../../../core/services/project.service';
 import { ContactService } from '../../../core/services/contact.service';
 import { AnalyticsSummary, ContactMessage, Project } from '../../../core/models';
@@ -31,8 +33,10 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private analyticsSvc: AnalyticsService,
+    private authSvc:      AuthService,
     private projectSvc:   ProjectService,
     private contactSvc:   ContactService,
+    private router:       Router,
   ) {}
 
   getDeviceWidth(count: number): number {
@@ -42,15 +46,19 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    if (this.authSvc.currentAdmin()?.role === 'publisher') {
+      this.router.navigate(['/admin/publisher-dashboard'], { replaceUrl: true });
+      return;
+    }
     forkJoin({
-      analytics: this.analyticsSvc.getSummary(),
-      projects:  this.projectSvc.getAll(),
-      messages:  this.contactSvc.getMessages(1, 20),
+      analytics: this.analyticsSvc.getSummary().pipe(catchError(() => of({ data: null } as { data: AnalyticsSummary | null }))),
+      projects:  this.projectSvc.getAll().pipe(catchError(() => of({ data: [] }))),
+      messages:  this.contactSvc.getMessages(1, 20).pipe(catchError(() => of({ data: [] }))),
     }).subscribe({
       next: ({ analytics, projects, messages }) => {
-        this.analytics.set(analytics.data || null);
-        this.projects.set(projects.data || []);
-        this.messages.set(messages.data || []);
+        this.analytics.set(analytics.data ?? null);
+        this.projects.set(projects.data ?? []);
+        this.messages.set(messages.data ?? []);
         this.loading.set(false);
       },
       error: () => {

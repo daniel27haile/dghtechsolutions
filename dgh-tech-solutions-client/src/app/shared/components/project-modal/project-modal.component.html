@@ -1,131 +1,153 @@
 @if (project) {
-  <div class="modal-overlay"
-       role="dialog"
-       aria-modal="true"
-       [attr.aria-label]="project.title + ' — project details'"
-       (click)="onOverlayClick($event)">
+  <!-- Overlay — clicking outside the panel closes the modal -->
+  <div
+    class="modal-overlay"
+    role="presentation"
+    (click)="onOverlayClick($event)"
+  >
+    <!-- Modal panel -->
+    <div
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-labelledby]="'modal-title-' + project._id"
+    >
 
-    <div class="modal">
-
-      <!-- Close button -->
-      <button class="close-btn"
-              type="button"
-              (click)="closed.emit()"
-              aria-label="Close project details">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
-          <path d="M18 6 6 18M6 6l12 12"/>
-        </svg>
-      </button>
-
-      <!-- Hero image -->
-      @if (project.imageUrl) {
-        <div class="modal-hero-img">
-          <img [src]="project.imageUrl"
-               [alt]="project.title + ' — project screenshot'"
-               loading="lazy" />
+      <!-- ── Header (always visible) ────────────────────────────────────── -->
+      <div class="modal-header">
+        <div class="modal-header__meta">
+          @if (project.category) {
+            <span class="cat-badge">{{ project.category }}</span>
+          }
+          @if (project.client) {
+            <span class="client-tag">{{ project.client }}</span>
+          }
         </div>
-      } @else {
-        <div class="modal-hero-placeholder" aria-hidden="true">
-          <span>{{ project.title[0] }}</span>
-        </div>
-      }
+        <h2 class="modal-title" [id]="'modal-title-' + project._id">{{ project.title }}</h2>
 
-      <!-- Body -->
+        <button
+          class="close-btn"
+          type="button"
+          #closeBtn
+          (click)="closed.emit()"
+          aria-label="Close project details"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- ── Scrollable body ────────────────────────────────────────────── -->
       <div class="modal-body">
 
-        <!-- Header -->
-        <div class="modal-head">
-          <div class="modal-meta">
-            @if (project.category) {
-              <span class="cat-badge">{{ project.category }}</span>
-            }
-            @if (project.client) {
-              <span class="client-tag">{{ project.client }}</span>
-            }
+        <!-- Hero image -->
+        @if (project.imageUrl) {
+          <div class="modal-hero-img">
+            <img
+              [src]="project.imageUrl"
+              [alt]="project.title + ' — project screenshot'"
+              loading="lazy"
+            />
           </div>
-          <h2>{{ project.title }}</h2>
+        } @else {
+          <div class="modal-hero-placeholder" aria-hidden="true">
+            <span>{{ project.title[0] }}</span>
+          </div>
+        }
+
+        <!-- Content sections -->
+        <div class="modal-content">
+
+          <!-- Short description -->
           <p class="short-desc">{{ project.shortDescription }}</p>
-        </div>
 
-        <!-- Tech stack -->
-        @if (project.techStack?.length) {
-          <div class="detail-section">
-            <h3 class="section-label">Tech Stack</h3>
-            <div class="tech-tags" aria-label="Technologies used">
-              @for (t of project.techStack!; track t) {
-                <span class="tech-tag">{{ t }}</span>
-              }
+          <!-- Tech stack -->
+          @if (project.techStack?.length) {
+            <div class="detail-section">
+              <h3 class="section-label">Tech Stack</h3>
+              <div class="tech-tags" aria-label="Technologies used">
+                @for (t of project.techStack!; track t) {
+                  <span class="tech-tag">{{ t }}</span>
+                }
+              </div>
             </div>
-          </div>
-        }
+          }
 
-        <!-- Full description -->
-        @if (project.fullDescription) {
-          <div class="detail-section">
-            <h3 class="section-label">About This Project</h3>
-            <p class="body-text">{{ project.fullDescription }}</p>
-          </div>
-        }
+          <!-- Full description -->
+          @if (project.fullDescription) {
+            <div class="detail-section">
+              <h3 class="section-label">About This Project</h3>
+              <p class="body-text">{{ project.fullDescription }}</p>
+            </div>
+          }
 
-        <!-- Problem solved -->
-        @if (project.problemSolved) {
-          <div class="detail-section">
-            <h3 class="section-label">Problem Solved</h3>
-            <p class="body-text">{{ project.problemSolved }}</p>
-          </div>
-        }
+          <!-- Problem solved -->
+          @if (project.problemSolved) {
+            <div class="detail-section">
+              <h3 class="section-label">Problem Solved</h3>
+              <p class="body-text">{{ project.problemSolved }}</p>
+            </div>
+          }
 
-        <!-- Key features -->
-        @if (project.features?.length) {
-          <div class="detail-section">
-            <h3 class="section-label">Key Features</h3>
-            <ul class="feature-list" role="list">
-              @for (f of project.features!; track f) {
-                <li role="listitem">
-                  <span class="feat-check" aria-hidden="true">&#10003;</span>
-                  {{ f }}
-                </li>
-              }
-            </ul>
-          </div>
-        }
+          <!-- Key features -->
+          @if (project.features?.length) {
+            <div class="detail-section">
+              <h3 class="section-label">Key Features</h3>
+              <ul class="feature-list" role="list">
+                @for (f of project.features!; track f) {
+                  <li role="listitem">
+                    <span class="feat-check" aria-hidden="true">&#10003;</span>
+                    {{ f }}
+                  </li>
+                }
+              </ul>
+            </div>
+          }
 
-        <!-- External links -->
-        @if (project.liveUrl || project.githubUrl) {
-          <div class="modal-links">
-            @if (project.liveUrl) {
-              <a [href]="project.liveUrl"
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 class="btn-live"
-                 [attr.aria-label]="'Visit live website for ' + project.title + ' (opens in new tab)'">
-                View Live Site &#8599;
-              </a>
-            }
-            @if (project.githubUrl) {
-              <a [href]="project.githubUrl"
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 class="btn-github"
-                 [attr.aria-label]="'View source code on GitHub (opens in new tab)'">
-                GitHub &#8599;
-              </a>
-            }
+          <!-- CTA -->
+          <div class="modal-cta">
+            <p class="cta-text">Interested in a similar solution for your business?</p>
+            <a
+              routerLink="/contact"
+              class="btn btn--primary btn--sm"
+              (click)="closed.emit()"
+            >Start a Project with DGH &rarr;</a>
           </div>
-        }
 
-        <!-- CTA -->
-        <div class="modal-cta">
-          <p class="cta-text">Interested in a similar solution for your business?</p>
-          <a routerLink="/contact"
-             class="btn btn--primary btn--sm"
-             (click)="closed.emit()">
-            Start a Project with DGH &rarr;
-          </a>
         </div>
-
       </div><!-- /modal-body -->
+
+      <!-- ── Footer (always visible) ────────────────────────────────────── -->
+      <div class="modal-footer">
+        <button
+          class="btn btn--outline btn--sm"
+          type="button"
+          (click)="closed.emit()"
+        >Close</button>
+
+        @if (project.liveUrl) {
+          <a
+            [href]="project.liveUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn--primary btn--sm"
+            [attr.aria-label]="'Visit live website for ' + project.title + ' (opens in new tab)'"
+          >Visit Website &#8599;</a>
+        }
+
+        @if (project.githubUrl) {
+          <a
+            [href]="project.githubUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-github btn--sm"
+            aria-label="View source code on GitHub (opens in new tab)"
+          >GitHub &#8599;</a>
+        }
+      </div>
+
     </div><!-- /modal -->
   </div><!-- /modal-overlay -->
 }

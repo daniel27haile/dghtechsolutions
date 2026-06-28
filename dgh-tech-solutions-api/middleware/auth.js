@@ -42,4 +42,29 @@ const restrictTo = (...roles) => {
   };
 };
 
-module.exports = { protect, restrictTo };
+/**
+ * Allow admin/superadmin only (excludes publishers).
+ */
+const requireAdmin = (req, res, next) => {
+  if (!['admin', 'superadmin'].includes(req.admin.role)) {
+    return res.status(403).json({ success: false, message: 'Admin access required' });
+  }
+  next();
+};
+
+/**
+ * Allow admin OR publisher.
+ */
+const requireAdminOrPublisher = (req, res, next) => {
+  if (!['admin', 'superadmin', 'publisher'].includes(req.admin.role)) {
+    return res.status(403).json({ success: false, message: 'Insufficient permissions' });
+  }
+  next();
+};
+
+/**
+ * isAdmin helper (non-middleware) — true for admin/superadmin.
+ */
+const isAdmin = (admin) => ['admin', 'superadmin'].includes(admin?.role);
+
+module.exports = { protect, restrictTo, requireAdmin, requireAdminOrPublisher, isAdmin };

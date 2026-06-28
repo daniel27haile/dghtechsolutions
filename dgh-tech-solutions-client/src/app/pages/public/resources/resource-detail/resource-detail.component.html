@@ -1,0 +1,1026 @@
+@if (loading()) {
+  <div class="viewer-loading">
+    <div class="spinner"></div>
+    <p>Loading resource...</p>
+  </div>
+} @else if (errorMsg()) {
+  <div class="viewer-error">
+    <p>{{ errorMsg() }}</p>
+    <a routerLink="/resources" class="btn btn--outline">Back to Resources</a>
+  </div>
+} @else if (resource()) {
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       LEARNING SCREEN  (MCQ · Flashcard · PDF · Bundle)
+       Shown when learningMode() is 'learning' or 'review'
+       ═══════════════════════════════════════════════════════════════════════ -->
+  @if (learningMode() !== 'off') {
+
+    <!-- ── Compact topbar ──────────────────────────────────────────────────── -->
+    <div class="learn-topbar">
+      <div class="container learn-topbar__inner">
+        <button class="learn-topbar__back btn--ghost" type="button" (click)="backToIntro()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          Back to Details
+        </button>
+        <span class="learn-topbar__title">{{ normalizeText(resource()!.title) }}</span>
+        @if (progress()) {
+          <span class="learn-topbar__pos">{{ progress() }}</span>
+        }
+      </div>
+    </div>
+
+    <!-- ── PDF progress band (PDF only) ───────────────────────────────────── -->
+    @if (canTrackProgress() && progressLoaded() && resource()!.type === 'PDF') {
+      <div class="cpb">
+        <div class="container">
+          <div class="cpb-top">
+            <div class="cpb-meta">
+              <span class="cpb-title">Course Progress</span>
+              <span class="cpb-pct-num" [class.cpb-pct-num--done]="isCompleted()">{{ displayPct() }}%</span>
+            </div>
+            <div class="cpb-actions">
+              @if (isCompleted()) {
+                <button class="btn btn--outline btn--sm" (click)="resetProgress()">Mark as Unread</button>
+              } @else {
+                <button class="btn btn--outline btn--sm" (click)="markPdfComplete()">Mark as Complete</button>
+              }
+            </div>
+          </div>
+          <div class="cpb-bar-row">
+            <app-progress-bar [pct]="displayPct()" />
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── Preview two-column layout (MCQ · Flashcard only) ─────────────── -->
+    @if (isPreviewMode()) {
+      <div class="container preview-body">
+        <div class="preview-layout">
+
+          <!-- ─ Left: preview question / flashcard ───────────────────────── -->
+          <div class="preview-main">
+            <div class="preview-badge">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Preview &mdash; sample {{ resource()!.type === 'MULTIPLE_CHOICE' ? 'questions' : 'flashcards' }}
+            </div>
+
+            @if (resource()!.type === 'MULTIPLE_CHOICE' && questions().length > 0) {
+              <div class="mcq-card">
+                <p class="mcq-question">{{ currentQuestion()?.question }}</p>
+                <div class="choices-list" role="radiogroup" [attr.aria-label]="'Choices for preview question ' + (currentQIndex() + 1)">
+                  @for (label of ['A','B','C','D']; track label) {
+                    <button
+                      class="choice-btn"
+                      [class.choice--selected]="!currentAnswer().revealed && currentAnswer().selected === label"
+                      [class.choice--correct]="currentAnswer().revealed && label === (currentQuestion()?.correctAnswer ?? '')"
+                      [class.choice--wrong]="currentAnswer().revealed && label === currentAnswer().selected && label !== (currentQuestion()?.correctAnswer ?? '')"
+                      [disabled]="currentAnswer().revealed"
+                      (click)="selectAnswer(label)"
+                      [attr.aria-label]="label + ': ' + getChoice(label)"
+                    >
+                      <span class="choice-label">{{ label }}</span>
+                      <span class="choice-text">{{ getChoice(label) }}</span>
+                      @if (currentAnswer().revealed) {
+                        @if (label === (currentQuestion()?.correctAnswer ?? '')) {
+                          <span class="choice-icon">&#10003;</span>
+                        } @else if (label === currentAnswer().selected && label !== (currentQuestion()?.correctAnswer ?? '')) {
+                          <span class="choice-icon">&#10005;</span>
+                        }
+                      }
+                    </button>
+                  }
+                </div>
+                @if (currentAnswer().revealed) {
+                  <div class="answer-feedback" [class.correct]="currentAnswer().selected === (currentQuestion()?.correctAnswer ?? '')">
+                    @if (currentAnswer().selected === (currentQuestion()?.correctAnswer ?? '')) {
+                      Correct!
+                    } @else {
+                      Incorrect &mdash; the correct answer is {{ currentQuestion()?.correctAnswer ?? '' }}.
+                    }
+                  </div>
+                }
+              </div>
+
+              @if (questions().length > 1) {
+                <div class="mcq-nav preview-nav">
+                  <div class="nav-left">
+                    @if (!isFirstQuestion()) {
+                      <button class="nav-btn nav-btn--prev" (click)="prevQuestion()">&#8592; Previous</button>
+                    }
+                  </div>
+                  <div class="nav-center">
+                    @if (currentAnswer().revealed && currentQuestion()?.explanation) {
+                      <button class="btn btn--outline btn--sm" (click)="openExplanation()">Check Explanation</button>
+                    }
+                  </div>
+                  <div class="nav-right">
+                    @if (!isLastQuestion()) {
+                      <button class="nav-btn nav-btn--next" (click)="nextQuestion()">Next &#8594;</button>
+                    }
+                  </div>
+                </div>
+              }
+            }
+
+            @if (resource()!.type === 'SHORT_ANSWER' && cards().length > 0) {
+              <div class="flashcard-scene" [class.flipped]="cardFlipped()">
+                <div class="flashcard">
+                  <div class="flashcard-front">
+                    <span class="card-side-label">Question</span>
+                    <p class="card-content">{{ currentCard()?.question }}</p>
+                    <button class="flip-btn" (click)="flipCard()">Flip for Answer &#8595;</button>
+                  </div>
+                  <div class="flashcard-back">
+                    <span class="card-side-label">Answer</span>
+                    <p class="card-content">{{ currentCard()?.answer }}</p>
+                    @if (currentCard()?.explanation) {
+                      <p class="card-explanation">{{ currentCard()?.explanation }}</p>
+                    }
+                    <button class="flip-btn flip-btn--back" (click)="flipCard()">&#8593; Show Question</button>
+                  </div>
+                </div>
+              </div>
+
+              @if (cards().length > 1) {
+                <div class="mcq-nav preview-nav">
+                  <div class="nav-left">
+                    @if (!isFirstCard()) {
+                      <button class="nav-btn nav-btn--prev" (click)="prevCard()">&#8592; Previous</button>
+                    }
+                  </div>
+                  <div class="nav-center">
+                    <button class="btn btn--outline btn--sm" (click)="flipCard()">
+                      {{ cardFlipped() ? 'Show Question' : 'Flip for Answer' }}
+                    </button>
+                  </div>
+                  <div class="nav-right">
+                    @if (!isLastCard()) {
+                      <button class="nav-btn nav-btn--next" (click)="nextCard()">Next &#8594;</button>
+                    }
+                  </div>
+                </div>
+              }
+            }
+
+            <div class="preview-note">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              @if (resource()!.lessonCount) {
+                Showing {{ questions().length || cards().length }} of {{ resource()!.lessonCount }}
+                {{ resource()!.type === 'MULTIPLE_CHOICE' ? 'questions' : 'flashcards' }}. Unlock all with full access.
+              } @else {
+                Preview only — purchase to unlock the full resource.
+              }
+            </div>
+          </div>
+
+          <!-- ─ Right: purchase sidebar ───────────────────────────────────── -->
+          <aside class="preview-sidebar">
+            <h3 class="preview-sidebar__heading">Unlock Full Access</h3>
+
+            <div class="preview-sidebar__price">
+              @if (resource()!.pricing?.oldPrice && resource()!.pricing!.oldPrice! > (resource()!.pricing?.salePrice ?? resource()!.price ?? 0)) {
+                <span class="intro-old-price">${{ resource()!.pricing!.oldPrice!.toFixed(2) }}</span>
+              }
+              <span class="preview-sidebar__price-val">${{ (resource()!.pricing?.salePrice ?? resource()!.price ?? 0).toFixed(2) }}</span>
+              @if (resource()!.pricing?.discountPercent && resource()!.pricing!.discountPercent! > 0) {
+                <span class="intro-discount-badge">{{ resource()!.pricing!.discountPercent }}% OFF</span>
+              }
+            </div>
+
+            <div class="preview-sidebar__actions">
+              <button
+                class="btn btn--primary btn--lg preview-sidebar__cta"
+                type="button"
+                (click)="addToCart()"
+                [disabled]="cartSvc.isInCart(resource()!._id ?? '')"
+              >
+                {{ cartSvc.isInCart(resource()!._id ?? '') ? 'In Cart' : 'Add to Cart' }}
+              </button>
+              <button class="btn btn--outline preview-sidebar__cta" type="button" (click)="startCheckout()" [disabled]="checkingOut()">
+                {{ checkingOut() ? 'Redirecting…' : 'Buy Now' }}
+              </button>
+            </div>
+
+            @if (checkoutError()) {
+              <p class="intro-checkout-error">{{ checkoutError() }}</p>
+            }
+            @if (!userAuth.isLoggedIn()) {
+              <p class="intro-login-hint">
+                Already purchased? <a routerLink="/login" class="purchase-link">Sign in</a>
+              </p>
+            }
+
+            <ul class="intro-included-list preview-sidebar__features">
+              @if (resource()!.lessonCount) {
+                <li>
+                  {{ resource()!.lessonCount }}
+                  {{ resource()!.type === 'MULTIPLE_CHOICE' ? 'practice questions' : 'flashcards' }}
+                </li>
+              }
+              <li><span class="iil__icon">&#9889;</span> Lifetime Access</li>
+              <li><span class="iil__icon">&#8734;</span> Unlimited Attempts</li>
+              <li>
+                <span class="iil__icon">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                </span>
+                Progress Saved
+              </li>
+            </ul>
+          </aside>
+
+        </div>
+      </div>
+    }
+
+    <!-- ── Multiple Choice viewer ─────────────────────────────────────────── -->
+    @if (resource()!.type === 'MULTIPLE_CHOICE' && !isPreviewMode()) {
+      @if (questions().length === 0 && (!requiresPurchase() || hasAccess())) {
+        <div class="container viewer-body">
+          <div class="empty-state">
+            <div class="empty-state__icon">&#9998;</div>
+            <p class="empty-state__title">No questions yet</p>
+            <p class="empty-state__text">Questions will appear here once they are published.</p>
+          </div>
+        </div>
+      } @else if (showLearningContent()) {
+        <div class="container viewer-body">
+
+          @if (showPhaseComplete()) {
+            <!-- ── Phase 1 complete screen ── -->
+            <div class="phase-break">
+              <div class="phase-break__icon" aria-hidden="true">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+              </div>
+              <p class="phase-break__label">Phase 1 Complete</p>
+              <h2 class="phase-break__heading">{{ phaseLabel1() }} section finished!</h2>
+              <p class="phase-break__sub">Great work. Ready to continue to the {{ phaseLabel2() }} section?</p>
+              <button class="btn btn--primary" (click)="continueToPhase2()">
+                Continue to Phase 2: {{ phaseLabel2() }} &#8594;
+              </button>
+            </div>
+          } @else {
+
+            <!-- Progress -->
+            <div class="viewer-progress">
+              <div class="viewer-progress__top">
+                <span class="viewer-progress__label">Progress</span>
+                <span class="viewer-progress__pct" [class.viewer-progress__pct--done]="localProgressPct() >= 100">{{ localProgressPct() }}%</span>
+              </div>
+              <p class="viewer-progress__count">{{ answeredCount() }} of {{ questions().length }} Questions Completed</p>
+              <div
+                class="viewer-progress__track"
+                role="progressbar"
+                [attr.aria-valuenow]="localProgressPct()"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-label="Quiz progress"
+              >
+                <div
+                  class="viewer-progress__fill"
+                  [class.viewer-progress__fill--done]="localProgressPct() >= 100"
+                  [style.width.%]="localProgressPct()"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Phase label chip -->
+            @if (isPhased()) {
+              <div class="phase-chip" [class.phase-chip--2]="activeQPhase() === 2">
+                Phase {{ activeQPhase() }}: {{ activeQPhase() === 1 ? phaseLabel1() : phaseLabel2() }}
+              </div>
+            }
+
+            <!-- Question card -->
+            <div class="mcq-card">
+              <p class="mcq-question">{{ currentQuestion()?.question }}</p>
+
+              <div class="choices-list" role="radiogroup" [attr.aria-label]="'Choices for question ' + (currentQIndex() + 1)">
+                @for (label of ['A','B','C','D']; track label) {
+                  <button
+                    class="choice-btn"
+                    [class.choice--selected]="!currentAnswer().revealed && currentAnswer().selected === label"
+                    [class.choice--correct]="currentAnswer().revealed && label === (currentQuestion()?.correctAnswer ?? '')"
+                    [class.choice--wrong]="currentAnswer().revealed && label === currentAnswer().selected && label !== (currentQuestion()?.correctAnswer ?? '')"
+                    [disabled]="currentAnswer().revealed"
+                    (click)="selectAnswer(label)"
+                    [attr.aria-label]="label + ': ' + getChoice(label)"
+                  >
+                    <span class="choice-label">{{ label }}</span>
+                    <span class="choice-text">{{ getChoice(label) }}</span>
+                    @if (currentAnswer().revealed) {
+                      @if (label === (currentQuestion()?.correctAnswer ?? '')) {
+                        <span class="choice-icon">&#10003;</span>
+                      } @else if (label === currentAnswer().selected && label !== (currentQuestion()?.correctAnswer ?? '')) {
+                        <span class="choice-icon">&#10005;</span>
+                      }
+                    }
+                  </button>
+                }
+              </div>
+
+              @if (currentAnswer().revealed) {
+                <div class="answer-feedback" [class.correct]="currentAnswer().selected === (currentQuestion()?.correctAnswer ?? '')">
+                  @if (currentAnswer().selected === (currentQuestion()?.correctAnswer ?? '')) {
+                    Correct!
+                  } @else {
+                    Incorrect &mdash; the correct answer is {{ currentQuestion()?.correctAnswer ?? '' }}.
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Navigation -->
+            <div class="mcq-nav">
+              <div class="nav-left">
+                @if (!isFirstQuestion()) {
+                  <button class="nav-btn nav-btn--prev" (click)="prevQuestion()">&#8592; Previous</button>
+                }
+              </div>
+              <div class="nav-center">
+                @if (currentAnswer().revealed && currentQuestion()?.explanation) {
+                  <button class="btn btn--outline btn--sm" (click)="openExplanation()">Check Explanation</button>
+                }
+              </div>
+              <div class="nav-right">
+                @if (!isLastQuestion()) {
+                  @if (isPhased() && currentQIndex() === phase1QCount() - 1 && questions().length > phase1QCount()) {
+                    <button class="nav-btn nav-btn--next nav-btn--phase" (click)="nextQuestion()" [disabled]="!currentAnswer().revealed">
+                      Phase 2: {{ phaseLabel2() }} &#8594;
+                    </button>
+                  } @else {
+                    <button class="nav-btn nav-btn--next" (click)="nextQuestion()">Next &#8594;</button>
+                  }
+                } @else if (mcqComplete()) {
+                  <span class="finish-chip">Quiz Complete &#10003;</span>
+                }
+              </div>
+            </div>
+
+          }
+
+        </div>
+      }
+    }
+
+    <!-- ── Flashcard viewer ────────────────────────────────────────────────── -->
+    @if (resource()!.type === 'SHORT_ANSWER' && !isPreviewMode()) {
+      @if (cards().length === 0 && (!requiresPurchase() || hasAccess())) {
+        <div class="container viewer-body">
+          <div class="empty-state">
+            <div class="empty-state__icon">&#128276;</div>
+            <p class="empty-state__title">No flashcards yet</p>
+            <p class="empty-state__text">Cards will appear here once they are published.</p>
+          </div>
+        </div>
+      } @else if (showLearningContent()) {
+        <div class="container viewer-body">
+
+          @if (showPhaseComplete()) {
+            <!-- ── Phase 1 complete screen ── -->
+            <div class="phase-break">
+              <div class="phase-break__icon" aria-hidden="true">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+              </div>
+              <p class="phase-break__label">Phase 1 Complete</p>
+              <h2 class="phase-break__heading">{{ phaseLabel1() }} section finished!</h2>
+              <p class="phase-break__sub">Great work. Ready to continue to the {{ phaseLabel2() }} section?</p>
+              <button class="btn btn--primary" (click)="continueToPhase2()">
+                Continue to Phase 2: {{ phaseLabel2() }} &#8594;
+              </button>
+            </div>
+          } @else {
+
+            <!-- Progress -->
+            <div class="viewer-progress">
+              <div class="viewer-progress__top">
+                <span class="viewer-progress__label">Progress</span>
+                <span class="viewer-progress__pct" [class.viewer-progress__pct--done]="localProgressPct() >= 100">{{ localProgressPct() }}%</span>
+              </div>
+              <p class="viewer-progress__count">Card {{ currentCardIndex() + 1 }} of {{ cards().length }}</p>
+              <div
+                class="viewer-progress__track"
+                role="progressbar"
+                [attr.aria-valuenow]="localProgressPct()"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-label="Flashcard progress"
+              >
+                <div
+                  class="viewer-progress__fill"
+                  [class.viewer-progress__fill--done]="localProgressPct() >= 100"
+                  [style.width.%]="localProgressPct()"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Phase label chip -->
+            @if (isPhased()) {
+              <div class="phase-chip" [class.phase-chip--2]="activeCardPhase() === 2">
+                Phase {{ activeCardPhase() }}: {{ activeCardPhase() === 1 ? phaseLabel1() : phaseLabel2() }}
+              </div>
+            }
+
+            <!-- Flashcard -->
+            <div class="flashcard-scene" [class.flipped]="cardFlipped()">
+              <div class="flashcard">
+                <div class="flashcard-front">
+                  <span class="card-side-label">Question</span>
+                  <p class="card-content">{{ currentCard()?.question }}</p>
+                  <button class="flip-btn" (click)="flipCard()">Flip for Answer &#8595;</button>
+                </div>
+                <div class="flashcard-back">
+                  <span class="card-side-label">Answer</span>
+                  <p class="card-content">{{ currentCard()?.answer }}</p>
+                  @if (currentCard()?.explanation) {
+                    <p class="card-explanation">{{ currentCard()?.explanation }}</p>
+                  }
+                  <button class="flip-btn flip-btn--back" (click)="flipCard()">&#8593; Show Question</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="mcq-nav">
+              <div class="nav-left">
+                @if (!isFirstCard()) {
+                  <button class="nav-btn nav-btn--prev" (click)="prevCard()">&#8592; Previous</button>
+                }
+              </div>
+              <div class="nav-center">
+                <button class="btn btn--outline btn--sm" (click)="flipCard()">
+                  {{ cardFlipped() ? 'Show Question' : 'Flip for Answer' }}
+                </button>
+              </div>
+              <div class="nav-right">
+                @if (!isLastCard()) {
+                  @if (isPhased() && currentCardIndex() === phase1CardCount() - 1 && cards().length > phase1CardCount()) {
+                    <button class="nav-btn nav-btn--next nav-btn--phase" (click)="nextCard()">
+                      Phase 2: {{ phaseLabel2() }} &#8594;
+                    </button>
+                  } @else {
+                    <button class="nav-btn nav-btn--next" (click)="nextCard()">Next &#8594;</button>
+                  }
+                } @else {
+                  <button class="btn btn--primary btn--sm" (click)="markAllDone()">All Done &#10003;</button>
+                }
+              </div>
+            </div>
+
+          }
+
+        </div>
+      }
+    }
+
+    <!-- ── Bundle viewer ──────────────────────────────────────────────────── -->
+    @if (resource()!.type === 'BUNDLE') {
+      <div class="container viewer-body">
+        <div class="bundle-info">
+          <div class="bundle-info__icon">&#128230;</div>
+          <h2>What's Included</h2>
+          <p>This bundle gives you lifetime access to the following resources:</p>
+          @if ((resource()!.includedResourceIds?.length ?? 0) === 0) {
+            <p class="bundle-empty">No resources have been added to this bundle yet.</p>
+          } @else {
+            <ul class="bundle-list">
+              @for (id of resource()!.includedResourceIds ?? []; track id) {
+                <li class="bundle-list__item">
+                  <span class="bundle-check">&#10003;</span>
+                  <a [routerLink]="['/resources', id]" class="bundle-resource-link">View resource</a>
+                </li>
+              }
+            </ul>
+          }
+          @if (!hasAccess() && resource()!.isPaid) {
+            <div class="bundle-purchase">
+              @if (checkoutError()) { <p class="purchase-gate__error">{{ checkoutError() }}</p> }
+              <button class="btn btn--primary btn--lg" (click)="startCheckout()" [disabled]="checkingOut()">
+                {{ checkingOut() ? 'Redirecting…' : ('Get Bundle — $' + resource()!.price) }}
+              </button>
+              @if (!userAuth.isLoggedIn()) {
+                <p class="purchase-gate__login">
+                  Already purchased? <a routerLink="/login" class="purchase-link">Sign in</a> to access it.
+                </p>
+              }
+            </div>
+          } @else if (hasAccess()) {
+            <p class="bundle-owned">&#10003; You have lifetime access to this bundle.</p>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ── PDF viewer ─────────────────────────────────────────────────────── -->
+    @if (resource()!.type === 'PDF') {
+      <div class="container viewer-body">
+        @if (!resource()!.pdfUrl) {
+          <div class="empty-state">
+            <div class="empty-state__icon">&#128196;</div>
+            <p class="empty-state__title">PDF not available</p>
+            <p class="empty-state__text">The PDF for this resource has not been uploaded yet.</p>
+          </div>
+        } @else {
+          <div class="pdf-viewer-wrap" (contextmenu)="onContextMenu($event)">
+            @if (resource()!.isPaid && !hasAccess()) {
+              <div class="pdf-gate">
+                <div class="pdf-gate-icon">&#128274;</div>
+                <h2>Full Access Required</h2>
+                <p>This is a paid resource. Purchase one-time lifetime access to read the full PDF.</p>
+                @if (checkoutError()) {
+                  <p class="pdf-gate-error">{{ checkoutError() }}</p>
+                }
+                <button class="btn btn--primary" (click)="startCheckout()" [disabled]="checkingOut()">
+                  {{ checkingOut() ? 'Redirecting…' : ('Purchase Access — $' + resource()!.price) }}
+                </button>
+                @if (!userAuth.isLoggedIn()) {
+                  <p class="purchase-gate__login">
+                    Already purchased? <a routerLink="/login" class="purchase-link">Sign in</a> to access it.
+                  </p>
+                }
+              </div>
+            } @else {
+              <div class="pdf-frame-wrap">
+                <div class="pdf-security-notice">
+                  Viewing in secure read-only mode. Downloading and printing are disabled.
+                </div>
+                <iframe
+                  class="pdf-frame"
+                  [src]="resource()!.pdfUrl + '#toolbar=0&navpanes=0&scrollbar=0'"
+                  title="{{ resource()!.title }} PDF"
+                  allow="fullscreen"
+                  sandbox="allow-same-origin allow-scripts"
+                ></iframe>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+  } @else {
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         INTRO / DETAILS SCREEN  (learningMode === 'off')
+         ═══════════════════════════════════════════════════════════════════════ -->
+
+    <!-- ── Hero header ────────────────────────────────────────────────────── -->
+    <div class="viewer-header">
+      <div class="container">
+        <div class="viewer-header__toprow">
+          <a routerLink="/resources" class="back-link">&#8592; Resources</a>
+          <button class="share-btn" type="button" (click)="shareResource()" aria-label="Share this resource">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/>
+            </svg>
+            Share
+          </button>
+        </div>
+        <div class="intro-badges">
+          <span class="cat-badge">{{ resource()!.category }}</span>
+          <span class="type-badge">{{ typeBadge(resource()!.type) }}</span>
+          @if (resource()!.isPaid) {
+            @if (hasAccess()) {
+              <span class="owned-badge">Purchased</span>
+            } @else {
+              <span class="paid-badge">Premium</span>
+            }
+          } @else {
+            <span class="free-badge">Free</span>
+          }
+        </div>
+        <h1 class="viewer-title">{{ normalizeText(resource()!.title) }}</h1>
+        <p class="viewer-desc">{{ cleanDescription(resource()!.description) }}</p>
+
+        <!-- Meta chips row -->
+        <div class="intro-hero-meta">
+          @if (resource()!.lessonCount) {
+            <span class="hero-meta-item">
+              {{ resource()!.lessonCount }}
+              {{ resource()!.type === 'MULTIPLE_CHOICE' ? 'questions' : resource()!.type === 'SHORT_ANSWER' ? 'flashcards' : 'items' }}
+            </span>
+          }
+          @if (resource()!.level) {
+            <span class="hero-meta-item">
+              {{ resource()!.level }}
+            </span>
+          }
+          @if (resource()!.duration) {
+            <span class="hero-meta-item">
+              <span class="hero-meta-item__icon" aria-hidden="true">&#9201;</span>
+              {{ resource()!.duration }}
+            </span>
+          }
+          @if ((resource()!.reviewCount ?? 0) > 0) {
+            <span class="hero-meta-item">
+              <span class="hero-meta-item__icon" aria-hidden="true">&#11088;</span>
+              {{ (resource()!.averageRating ?? 0).toFixed(1) }}
+              <span class="hero-meta-item__sub">({{ resource()!.reviewCount }})</span>
+            </span>
+          }
+          @if (resource()!.updatedAt) {
+            <span class="hero-meta-item">
+              <span class="hero-meta-item__icon" aria-hidden="true">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </span>
+              Updated {{ resource()!.updatedAt | date:'MMM yyyy' }}
+            </span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Two-column body ────────────────────────────────────────────────── -->
+    <div class="intro-layout">
+      <div class="container intro-layout__inner">
+
+        <!-- ─ Left: resource details ────────────────────────────────────── -->
+        <div class="intro-details">
+
+          <!-- About -->
+          <div class="intro-section">
+            <h2 class="intro-section__title">About this resource</h2>
+            <p class="intro-section__text">{{ cleanDescription(resource()!.fullDescription || resource()!.description) || 'Practice with structured study materials designed to help you master the subject.' }}</p>
+          </div>
+
+          <!-- What you'll learn -->
+          @if ((resource()!.whatYouWillLearn?.length ?? 0) > 0) {
+            <div class="intro-section">
+              <h2 class="intro-section__title">What you'll learn</h2>
+              <ul class="intro-learn-list">
+                @for (item of resource()!.whatYouWillLearn!; track item) {
+                  <li class="intro-learn-item">
+                    <span class="intro-learn-item__check" aria-hidden="true">&#10003;</span>
+                    {{ item }}
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+
+          <!-- Curriculum -->
+          @if ((resource()!.curriculum?.length ?? 0) > 0) {
+            <div class="intro-section">
+              <h2 class="intro-section__title">Contents</h2>
+              <div class="intro-curriculum">
+                @for (sec of resource()!.curriculum!; track sec.sectionTitle) {
+                  <div class="intro-curriculum__section">
+                    <p class="intro-curriculum__heading">{{ sec.sectionTitle }}</p>
+                    @if (sec.lessons.length > 0) {
+                      <ul class="intro-curriculum__list">
+                        @for (lesson of sec.lessons!; track lesson) {
+                          <li>{{ lesson }}</li>
+                        }
+                      </ul>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Requirements -->
+          @if ((resource()!.requirements?.length ?? 0) > 0) {
+            <div class="intro-section">
+              <h2 class="intro-section__title">Requirements</h2>
+              <ul class="intro-simple-list">
+                @for (req of resource()!.requirements!; track req) {
+                  <li>{{ req }}</li>
+                }
+              </ul>
+            </div>
+          }
+
+          <!-- Target audience -->
+          @if ((resource()!.targetAudience?.length ?? 0) > 0) {
+            <div class="intro-section">
+              <h2 class="intro-section__title">Who this is for</h2>
+              <ul class="intro-simple-list">
+                @for (aud of resource()!.targetAudience!; track aud) {
+                  <li>{{ aud }}</li>
+                }
+              </ul>
+            </div>
+          }
+
+          <!-- Tags -->
+          @if ((resource()!.tags?.length ?? 0) > 0) {
+            <div class="intro-tags">
+              @for (tag of resource()!.tags!; track tag) {
+                <span class="intro-tag">{{ tag }}</span>
+              }
+            </div>
+          }
+
+        </div><!-- /intro-details -->
+
+        <!-- ─ Right: sticky CTA card ─────────────────────────────────────── -->
+        <aside class="intro-cta-wrap" aria-label="Course actions">
+          <div class="intro-cta-card">
+
+            <!-- Thumbnail preview -->
+            @if (resource()!.thumbnailUrl) {
+              <img class="intro-cta-thumb" [src]="resource()!.thumbnailUrl" [alt]="resource()!.title + ' thumbnail'" loading="lazy" />
+            }
+
+            <!-- Progress bar (shown when started and not yet completed) -->
+            @if (canTrackProgress() && progressLoaded() && displayPct() > 0 && ctaState() === 'in_progress') {
+              <div class="intro-progress">
+                <h4 class="intro-progress__heading">Your Progress</h4>
+                <div class="intro-progress__row">
+                  @if (resource()!.type === 'MULTIPLE_CHOICE' && questions().length > 0) {
+                    <span class="intro-progress__label">{{ answeredCount() }} of {{ questions().length }} answered</span>
+                  } @else if (resource()!.type === 'SHORT_ANSWER' && cards().length > 0) {
+                    <span class="intro-progress__label">Card {{ currentCardIndex() + 1 }} of {{ cards().length }}</span>
+                  } @else {
+                    <span class="intro-progress__label">In progress</span>
+                  }
+                  <span class="intro-progress__pct">{{ displayPct() }}%</span>
+                </div>
+                <div class="intro-progress__track" role="progressbar" [attr.aria-valuenow]="displayPct()" aria-valuemin="0" aria-valuemax="100">
+                  <div class="intro-progress__fill" [style.width.%]="displayPct()"></div>
+                </div>
+              </div>
+            }
+
+            <!-- ── Completion summary ─────────────────────────────────────── -->
+            @if (ctaState() === 'completed') {
+              <div class="intro-completion">
+                <h3 class="intro-completion__title">Congratulations!</h3>
+                <p class="intro-completion__sub">You completed this resource.</p>
+
+                @if (resource()!.type === 'MULTIPLE_CHOICE' && questions().length > 0) {
+                  <div class="intro-completion__score">
+                    <span class="intro-completion__score-val">{{ mcqScore() }}/{{ questions().length }}</span>
+                    <span class="intro-completion__score-lbl">Score</span>
+                  </div>
+                  <div class="intro-completion__breakdown">
+                    <span class="intro-completion__correct">&#10003; {{ mcqScore() }} correct</span>
+                    <span class="intro-completion__incorrect">&#10007; {{ incorrectCount() }} incorrect</span>
+                  </div>
+                }
+
+                <div class="intro-completion__progress">
+                  <div class="intro-completion__prow">
+                    <span>Progress</span>
+                    <span class="intro-completion__ppct">100%</span>
+                  </div>
+                  <div class="intro-completion__bar">
+                    <div class="intro-completion__fill"></div>
+                  </div>
+                </div>
+
+                <div class="intro-completion__badge">&#10003; Completed</div>
+                @if (courseProgress()?.completedAt) {
+                  <p class="intro-completion__date">
+                    Completed on {{ courseProgress()!.completedAt | date:'mediumDate' }}
+                  </p>
+                }
+              </div>
+            }
+
+            <!-- ── Shuffle mode picker (MCQ + Flashcards, before first start) -->
+            @if ((resource()!.type === 'MULTIPLE_CHOICE' || resource()!.type === 'SHORT_ANSWER') && ctaState() !== 'no_access') {
+              <div class="intro-mode-picker" role="group" aria-label="Question order">
+                <button
+                  class="intro-mode-btn"
+                  [class.intro-mode-btn--active]="questionMode() === 'normal'"
+                  type="button"
+                  (click)="questionMode.set('normal')"
+                >
+                  In Order
+                </button>
+                <button
+                  class="intro-mode-btn"
+                  [class.intro-mode-btn--active]="questionMode() === 'shuffle'"
+                  type="button"
+                  (click)="questionMode.set('shuffle')"
+                >
+                  <span class="intro-mode-btn__icon" aria-hidden="true">&#8646;</span>
+                  Shuffle
+                </button>
+              </div>
+            }
+
+            <!-- ── CTA buttons (state-based) ─────────────────────────────── -->
+            <div class="intro-cta-actions">
+
+              @if (ctaState() === 'not_started') {
+                <!-- Case A: never started -->
+                <button class="btn btn--primary btn--lg intro-cta-actions__primary" type="button" (click)="startLearning()">
+                  @if (resource()!.type === 'SHORT_ANSWER') { Start Flashcards }
+                  @else if (resource()!.type === 'PDF') { Read Now }
+                  @else { Start Learning }
+                </button>
+              }
+
+              @if (ctaState() === 'in_progress') {
+                <!-- Case B: partially completed -->
+                <button class="btn btn--primary btn--lg intro-cta-actions__primary" type="button" (click)="resumeLearning()">
+                  Resume — {{ displayPct() }}% Complete
+                </button>
+                <button class="btn btn--outline intro-cta-actions__secondary" type="button" (click)="confirmStartOver()">
+                  Restart Practice
+                </button>
+              }
+
+              @if (ctaState() === 'completed') {
+                <!-- Case C: all done -->
+                <button class="btn btn--primary btn--lg intro-cta-actions__primary" type="button" (click)="reviewAgain()">
+                  Review Questions
+                </button>
+                <button class="btn btn--outline intro-cta-actions__secondary" type="button" (click)="confirmStartOver()">
+                  Restart Practice
+                </button>
+                <a routerLink="/resources" class="btn btn--ghost intro-cta-actions__tertiary">
+                  Back to Resources
+                </a>
+                @if (userAuth.isLoggedIn() && !hasReviewed()) {
+                  <button class="btn btn--ghost intro-cta-actions__tertiary" type="button" (click)="showReviewPopup.set(true)">
+                    Leave a Review
+                  </button>
+                }
+              }
+
+              @if (ctaState() === 'no_access') {
+                <!-- Case D: paid, not purchased -->
+                @if (resource()!.isPaid) {
+                  <div class="intro-price-row">
+                    @if (resource()!.pricing?.oldPrice && resource()!.pricing!.oldPrice! > (resource()!.pricing?.salePrice ?? resource()!.price ?? 0)) {
+                      <span class="intro-old-price">${{ resource()!.pricing!.oldPrice!.toFixed(2) }}</span>
+                    }
+                    <span class="intro-sale-price">${{ (resource()!.pricing?.salePrice ?? resource()!.price ?? 0).toFixed(2) }}</span>
+                    @if (resource()!.pricing?.discountPercent && resource()!.pricing!.discountPercent! > 0) {
+                      <span class="intro-discount-badge">{{ resource()!.pricing!.discountPercent }}% OFF</span>
+                    }
+                  </div>
+                }
+                <button
+                  class="btn btn--primary btn--lg intro-cta-actions__primary"
+                  type="button"
+                  (click)="addToCart()"
+                  [disabled]="cartSvc.isInCart(resource()!._id ?? '')"
+                >
+                  {{ cartSvc.isInCart(resource()!._id ?? '') ? 'In Cart' : 'Add to Cart' }}
+                </button>
+                <button class="btn btn--outline intro-cta-actions__secondary" type="button" (click)="startCheckout()" [disabled]="checkingOut()">
+                  {{ checkingOut() ? 'Redirecting…' : 'Buy Now' }}
+                </button>
+                <button class="btn btn--ghost intro-cta-actions__tertiary" type="button" (click)="startLearning()">
+                  Preview
+                </button>
+                @if (checkoutError()) {
+                  <p class="intro-checkout-error">{{ checkoutError() }}</p>
+                }
+                @if (!userAuth.isLoggedIn()) {
+                  <p class="intro-login-hint">
+                    Already purchased? <a routerLink="/login" class="purchase-link">Sign in</a>
+                  </p>
+                }
+              }
+
+              <!-- Save to Library — free resources only -->
+              @if (!resource()!.isPaid && userAuth.isLoggedIn() && ctaState() !== 'no_access') {
+                @if (savedToLibrary()) {
+                  <button
+                    class="btn btn--ghost intro-cta-actions__tertiary intro-save-btn intro-save-btn--saved"
+                    type="button"
+                    [disabled]="savingToLibrary()"
+                    (click)="unsaveFromLibrary()"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    {{ savingToLibrary() ? 'Updating…' : 'Saved to Library' }}
+                  </button>
+                } @else {
+                  <button
+                    class="btn btn--ghost intro-cta-actions__tertiary intro-save-btn"
+                    type="button"
+                    [disabled]="savingToLibrary()"
+                    (click)="saveToLibrary()"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    {{ savingToLibrary() ? 'Saving…' : 'Save to Library' }}
+                  </button>
+                }
+              }
+
+            </div><!-- /intro-cta-actions -->
+
+            <!-- Included items -->
+            <ul class="intro-included-list">
+              @if (resource()!.type === 'BUNDLE' && (resource()!.includedResourceIds?.length ?? 0) > 0) {
+                <li><span class="iil__icon">&#128230;</span> {{ resource()!.includedResourceIds!.length }} Resources Included</li>
+              }
+              @if (resource()!.lessonCount && resource()!.type !== 'BUNDLE') {
+                <li>
+                  {{ resource()!.lessonCount }}
+                  {{ resource()!.type === 'MULTIPLE_CHOICE' ? 'practice questions' : resource()!.type === 'SHORT_ANSWER' ? 'flashcards' : 'items' }}
+                </li>
+              }
+              @if (resource()!.duration) {
+                <li><span class="iil__icon">&#9201;</span> {{ resource()!.duration }}</li>
+              }
+              <li><span class="iil__icon">&#9889;</span> Lifetime Access</li>
+              @if (resource()!.type !== 'BUNDLE') {
+                <li><span class="iil__icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></span> Progress Saved</li>
+                <li><span class="iil__icon">&#8734;</span> Unlimited Attempts</li>
+              }
+            </ul>
+
+          </div><!-- /intro-cta-card -->
+        </aside>
+
+      </div><!-- /intro-layout__inner -->
+    </div><!-- /intro-layout -->
+
+    <!-- ── Reviews ────────────────────────────────────────────────────────── -->
+    <div class="container">
+      <section class="intro-reviews" aria-labelledby="reviews-heading">
+        @if (reviewCount() > 0) {
+          <div class="reviews-summary">
+            <div class="reviews-avg">
+              <span class="reviews-avg__score">{{ avgRating().toFixed(1) }}</span>
+              <app-star-rating [rating]="avgRating()" size="lg" mode="display" />
+            </div>
+            <p class="reviews-avg__count">{{ reviewCount() }} {{ reviewCount() === 1 ? 'review' : 'reviews' }}</p>
+          </div>
+        }
+        <h2 class="reviews-heading" id="reviews-heading">Reviews</h2>
+        @if (reviewsLoading()) {
+          <div class="reviews-loading">
+            <div class="spinner spinner--sm"></div>
+            <span>Loading reviews...</span>
+          </div>
+        } @else if (reviews().length === 0) {
+          <div class="reviews-empty">
+            <p class="reviews-empty__text">No reviews yet. Be the first to share your thoughts!</p>
+          </div>
+        } @else {
+          <ul class="reviews-list" role="list">
+            @for (rv of reviews(); track rv._id) {
+              <li class="review-item">
+                <div class="review-item__avatar" aria-hidden="true">{{ (rv.userName ?? 'A')[0].toUpperCase() }}</div>
+                <div class="review-item__body">
+                  <div class="review-item__top">
+                    <span class="review-item__name">{{ rv.userName ?? 'Anonymous' }}</span>
+                    <app-star-rating [rating]="rv.rating" size="sm" mode="display" />
+                    <span class="review-item__date">{{ formatReviewDate(rv.createdAt) }}</span>
+                  </div>
+                  @if (rv.comment) {
+                    <p class="review-item__comment">{{ rv.comment }}</p>
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    </div>
+
+  }<!-- @else (intro screen) -->
+
+  <!-- ── Start Over confirmation modal ─────────────────────────────────────── -->
+  @if (showStartOverConfirm()) {
+    <div class="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-title" (click)="cancelStartOver()">
+      <div class="confirm-modal" (click)="$event.stopPropagation()">
+        <div class="confirm-modal__icon" aria-hidden="true">&#9888;</div>
+        <h3 class="confirm-modal__title" id="confirm-title">Start Over?</h3>
+        <p class="confirm-modal__text">
+          Your current progress for this resource will be reset. This cannot be undone.
+        </p>
+        <div class="confirm-modal__actions">
+          <button class="btn btn--outline" type="button" (click)="cancelStartOver()">Cancel</button>
+          <button class="btn btn--danger" type="button" (click)="resetProgress()">Restart Practice</button>
+        </div>
+      </div>
+    </div>
+  }
+
+}<!-- @else if resource() -->
+
+<!-- ── Review Popup ────────────────────────────────────────────────────────── -->
+@if (showReviewPopup()) {
+  <app-review-popup
+    [resourceId]="resource()!._id!"
+    [resourceTitle]="resource()!.title"
+    (closed)="closeReviewPopup()"
+    (submitted)="onReviewSubmitted($event)"
+  />
+}
+
+<!-- ── Explanation Modal (MCQ) ────────────────────────────────────────────── -->
+@if (showExplanation()) {
+  <div class="modal-overlay" (click)="closeExplanation()" role="dialog" aria-modal="true" aria-label="Explanation">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Explanation</h3>
+        <button class="modal-close" (click)="closeExplanation()" aria-label="Close explanation">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <p>{{ explanationText() }}</p>
+      </div>
+    </div>
+  </div>
+}

@@ -7,10 +7,7 @@ const SiteContent = require('../models/SiteContent');
 const getContentByKey = async (req, res, next) => {
   try {
     const content = await SiteContent.findOne({ key: req.params.key });
-    if (!content) {
-      return res.status(404).json({ success: false, message: 'Content not found' });
-    }
-    res.status(200).json({ success: true, data: content.data });
+    res.status(200).json({ success: true, data: content ? content.data : null });
   } catch (error) {
     next(error);
   }

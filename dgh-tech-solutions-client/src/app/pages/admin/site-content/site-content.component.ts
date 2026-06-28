@@ -99,8 +99,8 @@ export class SiteContentComponent implements OnInit, OnDestroy {
     this.imagePreview.set('');
     this.form.reset();
     this.contentSvc.getByKey(key).subscribe({
-      next: (r) => { this.patchForm(r.data); this.loading.set(false); },
-      error: () => this.loading.set(false), // block not seeded yet — blank form is fine
+      next: (r) => { if (r.data) this.patchForm(r.data); this.loading.set(false); },
+      error: () => this.loading.set(false),
     });
   }
 

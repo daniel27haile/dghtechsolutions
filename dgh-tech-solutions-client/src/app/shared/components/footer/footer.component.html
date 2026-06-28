@@ -12,7 +12,7 @@
             loading="lazy"
           />
         </a>
-        <p>{{ footerContent()?.body || settings()?.metaDescription || 'Professional web development, mobile apps, and cloud services.' }}</p>
+        <p>{{ footerContent()?.body || settings()?.metaDescription || 'Building modern websites, AI-powered applications, cloud solutions, and enterprise software that help businesses grow.' }}</p>
         @if (settings()?.socialLinks?.linkedin || settings()?.socialLinks?.github || settings()?.socialLinks?.twitter || settings()?.socialLinks?.instagram || settings()?.socialLinks?.facebook || settings()?.socialLinks?.youtube) {
           <div class="social-links">
             @if (settings()?.socialLinks?.linkedin) {
@@ -48,6 +48,7 @@
         <ul>
           <li><a routerLink="/">Home</a></li>
           <li><a routerLink="/services">Services</a></li>
+          <li><a routerLink="/resources">Resources</a></li>
           <li><a routerLink="/about">About</a></li>
           <li><a routerLink="/contact">Contact</a></li>
         </ul>

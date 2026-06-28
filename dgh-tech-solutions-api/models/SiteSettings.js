@@ -22,6 +22,12 @@ const siteSettingsSchema = new mongoose.Schema(
     footerText: { type: String, default: '' },
     metaDescription: { type: String, default: '' },
     metaKeywords: { type: String, default: '' },
+    // Platform fee deducted from publisher earnings (%)
+    platformFeePercent: { type: Number, default: 20, min: 0, max: 100 },
+    // Minimum payout balance in USD
+    payoutMinimumAmount: { type: Number, default: 20, min: 0 },
+    // Days publisher must wait between approved payouts
+    payoutWaitingDays: { type: Number, default: 30, min: 0 },
   },
   { timestamps: true }
 );

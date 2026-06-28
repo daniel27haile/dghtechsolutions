@@ -1,0 +1,162 @@
+<div class="admin-page">
+  <div class="page-header">
+    <div>
+      <h1>{{ isPublisher() ? 'My Resources' : 'Resources' }}</h1>
+      <p class="page-sub">{{ resources().length }} resource{{ resources().length !== 1 ? 's' : '' }}{{ isPublisher() ? '' : ' total' }}</p>
+    </div>
+    <button class="btn btn-primary" (click)="openNew()">+ New Resource</button>
+  </div>
+
+  @if (errorMsg()) {
+    <div class="alert alert--error" style="margin-bottom:1rem;">{{ errorMsg() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="loading-row">
+      <div class="spinner"></div>
+      <span>Loading resources...</span>
+    </div>
+  } @else if (resources().length === 0) {
+    <div class="empty-panel">
+      <p class="empty-title">{{ isPublisher() ? 'No resources yet' : 'No resources yet' }}</p>
+      <p class="empty-text">{{ isPublisher() ? 'Create your first resource to start earning.' : 'Add your first learning resource to get started.' }}</p>
+      <button class="btn btn-primary" (click)="openNew()">+ {{ isPublisher() ? 'Create Resource' : 'Add Resource' }}</button>
+    </div>
+
+  } @else if (isPublisher()) {
+    <!-- ── Publisher view: creator-focused columns ───────────────────────── -->
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Resource</th>
+            <th>Type</th>
+            <th>Price</th>
+            <th>Students</th>
+            <th>Units Sold</th>
+            <th>Rating</th>
+            <th>Revenue</th>
+            <th>Status</th>
+            <th>Updated</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of resources(); track r._id) {
+            <tr>
+              <td>
+                <div class="res-cell">
+                  @if (r.thumbnailUrl) {
+                    <img [src]="r.thumbnailUrl" [alt]="r.title" class="res-thumb" />
+                  } @else {
+                    <div class="res-thumb-placeholder" [attr.data-type]="r.type"></div>
+                  }
+                  <div>
+                    <div class="res-title">{{ r.title }}</div>
+                    <div class="res-desc">{{ r.description | slice:0:50 }}{{ r.description.length > 50 ? '…' : '' }}</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="type-chip {{ typeClass(r.type) }}">{{ typeBadge(r.type) }}</span></td>
+              <td>
+                @if (r.isPaid) { <span class="paid-chip">${{ r.price }}</span> }
+                @else { <span class="free-chip">Free</span> }
+              </td>
+              <td class="stat-cell">{{ getSalesStudents(r._id!) }}</td>
+              <td class="stat-cell">{{ getSalesUnits(r._id!) }}</td>
+              <td class="rating-cell">
+                @if ((r.reviewCount ?? 0) > 0) {
+                  <span class="rating-val">{{ r.averageRating?.toFixed(1) }}</span>
+                  <span class="rating-count">({{ r.reviewCount }})</span>
+                } @else {
+                  <span class="td-dim">—</span>
+                }
+              </td>
+              <td class="net-cell">
+                @if (getSalesUnits(r._id!) > 0) {
+                  {{ getSalesNet(r._id!) | currency }}
+                } @else {
+                  <span class="td-dim">—</span>
+                }
+              </td>
+              <td>
+                <button class="status-toggle" [class.published]="r.isPublished" (click)="togglePublish(r)">
+                  {{ r.isPublished ? 'Published' : 'Draft' }}
+                </button>
+              </td>
+              <td class="td-dim updated-cell">{{ r.updatedAt | date:'MMM d, y' }}</td>
+              <td class="actions-cell">
+                @if (canEdit(r)) {
+                  <button class="btn-icon" (click)="openEdit(r)" title="Edit">&#9998;</button>
+                  <button class="btn-icon danger" (click)="delete(r._id!)" title="Delete">&#10005;</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+  } @else {
+    <!-- ── Admin view: full column set ──────────────────────────────────── -->
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Resource</th>
+            <th>Category</th>
+            <th>Type</th>
+            <th>Price</th>
+            <th>Featured</th>
+            <th>Status</th>
+            <th>Order</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of resources(); track r._id) {
+            <tr>
+              <td>
+                <div class="res-cell">
+                  @if (r.thumbnailUrl) {
+                    <img [src]="r.thumbnailUrl" [alt]="r.title" class="res-thumb" />
+                  } @else {
+                    <div class="res-thumb-placeholder" [attr.data-type]="r.type"></div>
+                  }
+                  <div>
+                    <div class="res-title">{{ r.title }}</div>
+                    <div class="res-desc">{{ r.description | slice:0:55 }}{{ r.description.length > 55 ? '…' : '' }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="cat-cell">{{ r.category }}</td>
+              <td>
+                <span class="type-chip {{ typeClass(r.type) }}">{{ typeBadge(r.type) }}</span>
+              </td>
+              <td>
+                @if (r.isPaid) { <span class="paid-chip">${{ r.price }}</span> }
+                @else { <span class="free-chip">Free</span> }
+              </td>
+              <td>
+                <button class="toggle-btn" [class.active]="r.isFeatured" (click)="toggleFeatured(r)"
+                  [title]="r.isFeatured ? 'Remove from featured' : 'Mark as featured'">
+                  {{ r.isFeatured ? '★' : '☆' }}
+                </button>
+              </td>
+              <td>
+                <button class="status-toggle" [class.published]="r.isPublished" (click)="togglePublish(r)">
+                  {{ r.isPublished ? 'Published' : 'Draft' }}
+                </button>
+              </td>
+              <td class="order-cell">{{ r.displayOrder ?? 0 }}</td>
+              <td class="actions-cell">
+                <button class="btn-icon" (click)="openEdit(r)" title="Edit resource">&#9998;</button>
+                <button class="btn-icon danger" (click)="delete(r._id!)" title="Delete resource">&#10005;</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
