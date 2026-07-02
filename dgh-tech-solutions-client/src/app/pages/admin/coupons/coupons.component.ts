@@ -166,7 +166,7 @@ type FormMode = 'create' | 'edit' | null;
             </thead>
             <tbody>
               @for (c of coupons(); track c._id) {
-                <tr [class.row-inactive]="!c.active">
+                <tr [class.row-inactive]="!c.active || isExpired(c)">
                   <td class="td-code">{{ c.code }}</td>
                   <td>
                     @if (c.discountType === 'percentage') {
@@ -187,8 +187,11 @@ type FormMode = 'create' | 'edit' | null;
                   <td class="td-muted">{{ c.maxRedemptions ?? '∞' }}</td>
                   <td class="td-muted">{{ c.expiresAt ? (c.expiresAt | date:'MMM d, y') : '—' }}</td>
                   <td>
-                    <span class="status-badge" [class.status-active]="c.active" [class.status-inactive]="!c.active">
-                      {{ c.active ? 'Active' : 'Inactive' }}
+                    <span class="status-badge"
+                      [class.status-active]="c.active && !isExpired(c)"
+                      [class.status-inactive]="!c.active"
+                      [class.status-expired]="c.active && isExpired(c)">
+                      {{ isExpired(c) ? 'Expired' : (c.active ? 'Active' : 'Inactive') }}
                     </span>
                   </td>
                   <td class="td-actions">
@@ -254,6 +257,7 @@ type FormMode = 'create' | 'edit' | null;
     .status-badge { display:inline-block; padding:.2rem .65rem; border-radius:999px; font-size:.72rem; font-weight:700; }
     .status-active   { background:#dcfce7; color:#16a34a; }
     .status-inactive { background:#f3f4f6; color:#9ca3af; }
+    .status-expired  { background:#fef3c7; color:#b45309; }
     .action-btn { background:none; border:1px solid #e5e7eb; border-radius:6px; padding:.3rem .7rem; font-size:.78rem; font-weight:600; cursor:pointer; color:var(--clr-dark); transition:all .15s; }
     .action-btn:hover { background:#f3f4f6; }
     .action-btn--danger { color:#dc2626; border-color:#fca5a5; }
@@ -423,6 +427,10 @@ export class AdminCouponsComponent implements OnInit {
         },
       });
     }
+  }
+
+  isExpired(c: Coupon): boolean {
+    return !!c.expiresAt && new Date(c.expiresAt) < new Date();
   }
 
   deleteCoupon(c: Coupon): void {

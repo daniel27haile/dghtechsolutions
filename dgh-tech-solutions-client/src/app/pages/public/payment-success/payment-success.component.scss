@@ -35,6 +35,7 @@
 
   &--success { background: rgba(16,185,129,.12); color: #10b981; }
   &--error   { background: rgba(239,68,68,.12);  color: #ef4444; }
+  &--pending { background: rgba(245,158,11,.12); color: #f59e0b; }
 }
 
 h1 { font-size: 1.75rem; font-weight: 800; color: var(--clr-dark); margin: 0; }
@@ -68,4 +69,26 @@ h1 { font-size: 1.75rem; font-weight: 800; color: var(--clr-dark); margin: 0; }
   gap: .75rem;
   width: 100%;
   margin-top: .5rem;
+}
+
+.success-resource-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  background: var(--clr-gray-50);
+  border: 1px solid var(--clr-border);
+  border-radius: 12px;
+  overflow: hidden;
+
+  li {
+    padding: .65rem 1.25rem;
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--clr-dark);
+    border-bottom: 1px solid var(--clr-border);
+    text-align: left;
+
+    &:last-child { border-bottom: none; }
+  }
 }

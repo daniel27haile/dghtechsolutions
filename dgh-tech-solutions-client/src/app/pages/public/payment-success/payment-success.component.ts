@@ -11,9 +11,15 @@ import { Resource } from '../../../core/models';
   styleUrls: ['./payment-success.component.scss'],
 })
 export class PaymentSuccessComponent implements OnInit {
-  loading  = signal(true);
-  resource = signal<Resource | null>(null);
-  errorMsg = signal('');
+  loading       = signal(true);
+  /** Single-resource purchase */
+  resource      = signal<Resource | null>(null);
+  /** Cart purchase — multiple resources */
+  resources     = signal<Resource[]>([]);
+  isCart        = signal(false);
+  /** Payment received but webhook not yet processed */
+  pending       = signal(false);
+  errorMsg      = signal('');
 
   constructor(
     private route:      ActivatedRoute,
@@ -30,10 +36,26 @@ export class PaymentSuccessComponent implements OnInit {
 
     this.paymentSvc.verifySession(sessionId).subscribe({
       next: (res) => {
-        if (res.data?.paid && res.data.resource) {
-          this.resource.set(res.data.resource);
+        const d = res.data;
+        if (d?.paid) {
+          this.isCart.set(d.isCart);
+          if (d.isCart) {
+            if (d.resources.length > 0) {
+              this.resources.set(d.resources);
+            } else {
+              // Webhook hasn't processed yet
+              this.pending.set(true);
+            }
+          } else {
+            if (d.resource) {
+              this.resource.set(d.resource);
+            } else {
+              // Webhook hasn't processed yet
+              this.pending.set(true);
+            }
+          }
         } else {
-          this.errorMsg.set('Payment verification failed. Please contact support.');
+          this.errorMsg.set('Payment was not completed. Please try again or contact support.');
         }
         this.loading.set(false);
       },
@@ -46,6 +68,6 @@ export class PaymentSuccessComponent implements OnInit {
 
   openResource(): void {
     const r = this.resource();
-    if (r) this.router.navigate(['/resources', r._id], { state: { resource: r } });
+    if (r?._id) this.router.navigate(['/resources', r._id]);
   }
 }

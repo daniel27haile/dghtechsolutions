@@ -34,7 +34,8 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/robots.txt"
+              "src/robots.txt",
+              "src/sitemap.xml"
             ],
             "styles": [
               "src/styles.scss"
@@ -51,8 +52,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kb",
-                  "maximumError": "8kb"
+                  "maximumWarning": "16kb",
+                  "maximumError": "32kb"
                 }
               ],
               "outputHashing": "all",

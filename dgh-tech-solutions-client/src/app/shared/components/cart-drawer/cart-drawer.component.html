@@ -9,136 +9,165 @@
     <div class="cart-drawer__head">
       <h2 class="cart-drawer__title">
         Cart
-        @if (cartSvc.cart().itemCount > 0) {
-          <span class="cart-drawer__badge">{{ cartSvc.cart().itemCount }}</span>
+        @if (itemCount() > 0) {
+          <span class="cart-drawer__badge">{{ itemCount() }}</span>
         }
       </h2>
       <button class="cart-drawer__close" type="button" (click)="close()" aria-label="Close cart">&#10005;</button>
     </div>
 
-    <!-- Loading -->
-    @if (cartSvc.loading()) {
-      <div class="cart-drawer__loading">
-        <div class="spinner spinner--sm"></div>
-        <span>Loading cart...</span>
-      </div>
-    }
+    @if (userAuth.isLoggedIn()) {
 
-    <!-- Empty state -->
-    @else if (cartSvc.cart().itemCount === 0) {
-      <div class="cart-drawer__empty">
-        <div class="cart-drawer__empty-icon" aria-hidden="true">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-          </svg>
+      <!-- Loading (backend cart) -->
+      @if (cartSvc.loading()) {
+        <div class="cart-drawer__loading">
+          <div class="spinner spinner--sm"></div>
+          <span>Loading cart...</span>
         </div>
-        <p class="cart-drawer__empty-title">Your cart is empty</p>
-        <p class="cart-drawer__empty-sub">Add a paid resource to get started.</p>
-        <a routerLink="/resources" class="btn btn--primary btn--sm" (click)="close()">Browse Resources</a>
-      </div>
-    }
+      }
 
-    <!-- Items + footer -->
-    @else {
-      <div class="cart-drawer__body">
+      <!-- Empty state -->
+      @else if (cartSvc.cart().itemCount === 0) {
+        <div class="cart-drawer__empty">
+          <div class="cart-drawer__empty-icon" aria-hidden="true">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+          </div>
+          <p class="cart-drawer__empty-title">Your cart is empty</p>
+          <p class="cart-drawer__empty-sub">Add a paid resource to get started.</p>
+          <a routerLink="/resources" class="btn btn--primary btn--sm" (click)="close()">Browse Resources</a>
+        </div>
+      }
 
-        <!-- Item list -->
-        <ul class="cart-items" role="list">
-          @for (item of cartSvc.cart().items; track item.resourceId) {
-            <li class="cart-item">
-              @if (item.thumbnailUrl) {
-                <img class="cart-item__thumb" [src]="item.thumbnailUrl" [alt]="item.title" loading="lazy" />
-              } @else {
-                <div class="cart-item__thumb cart-item__thumb--placeholder" aria-hidden="true">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <!-- Items + footer (logged-in) -->
+      @else {
+        <div class="cart-drawer__body">
+          <ul class="cart-items" role="list">
+            @for (item of cartSvc.cart().items; track item.resourceId) {
+              <li class="cart-item">
+                @if (item.thumbnailUrl) {
+                  <img class="cart-item__thumb" [src]="item.thumbnailUrl" [alt]="item.title" loading="lazy" />
+                } @else {
+                  <div class="cart-item__thumb cart-item__thumb--placeholder" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                  </div>
+                }
+                <div class="cart-item__info">
+                  <p class="cart-item__title">{{ item.title }}</p>
+                  <div class="cart-item__pricing">
+                    <span class="cart-item__price">${{ item.price.toFixed(2) }}</span>
+                    @if (item.oldPrice && item.oldPrice > item.price) {
+                      <span class="cart-item__old-price">${{ item.oldPrice.toFixed(2) }}</span>
+                      <span class="cart-item__badge">{{ item.discountPct }}% OFF</span>
+                    }
+                  </div>
                 </div>
-              }
-              <div class="cart-item__info">
-                <p class="cart-item__title">{{ item.title }}</p>
-                <div class="cart-item__pricing">
-                  <span class="cart-item__price">${{ item.price.toFixed(2) }}</span>
-                  @if (item.oldPrice && item.oldPrice > item.price) {
-                    <span class="cart-item__old-price">${{ item.oldPrice.toFixed(2) }}</span>
-                    <span class="cart-item__badge">{{ item.discountPct }}% OFF</span>
-                  }
-                </div>
-              </div>
-              <button
-                class="cart-item__remove"
-                type="button"
-                [attr.aria-label]="'Remove ' + item.title + ' from cart'"
-                (click)="remove(item.resourceId)"
-              >&#10005;</button>
-            </li>
-          }
-        </ul>
-
-        <!-- Coupon -->
-        <div class="cart-coupon">
-          @if (cartSvc.cart().couponCode) {
-            <div class="cart-coupon__applied">
-              <span class="cart-coupon__code">{{ cartSvc.cart().couponCode }}</span>
-              <span class="cart-coupon__saved">-${{ cartSvc.cart().couponDiscount.toFixed(2) }}</span>
-              <button class="cart-coupon__remove" type="button" (click)="removeCoupon()" aria-label="Remove coupon">&#10005;</button>
-            </div>
-          } @else {
-            <div class="cart-coupon__form">
-              <input
-                class="cart-coupon__input"
-                type="text"
-                placeholder="Coupon code"
-                [ngModel]="couponInput()"
-                (ngModelChange)="couponInput.set($event)"
-                aria-label="Coupon code"
-              />
-              <button
-                class="btn btn--outline btn--sm cart-coupon__apply"
-                type="button"
-                (click)="applyCoupon()"
-                [disabled]="applying() || !couponInput()"
-              >{{ applying() ? '...' : 'Apply' }}</button>
-            </div>
-            @if (couponError()) {
-              <p class="cart-coupon__error">{{ couponError() }}</p>
+                <button class="cart-item__remove" type="button" [attr.aria-label]="'Remove ' + item.title + ' from cart'" (click)="remove(item.resourceId)">&#10005;</button>
+              </li>
             }
-          }
-        </div>
+          </ul>
 
-      </div><!-- /body -->
-
-      <!-- Footer summary + checkout -->
-      <div class="cart-drawer__foot">
-        <div class="cart-summary">
-          <div class="cart-summary__row">
-            <span>Subtotal</span>
-            <span>${{ cartSvc.cart().subtotal.toFixed(2) }}</span>
+          <!-- Coupon -->
+          <div class="cart-coupon">
+            @if (cartSvc.cart().couponCode) {
+              <div class="cart-coupon__applied">
+                <span class="cart-coupon__code">{{ cartSvc.cart().couponCode }}</span>
+                <span class="cart-coupon__saved">-${{ cartSvc.cart().couponDiscount.toFixed(2) }}</span>
+                <button class="cart-coupon__remove" type="button" (click)="removeCoupon()" aria-label="Remove coupon">&#10005;</button>
+              </div>
+            } @else {
+              <div class="cart-coupon__form">
+                <input
+                  class="cart-coupon__input"
+                  type="text"
+                  placeholder="Coupon code"
+                  [ngModel]="couponInput()"
+                  (ngModelChange)="couponInput.set($event)"
+                  aria-label="Coupon code"
+                />
+                <button class="btn btn--outline btn--sm cart-coupon__apply" type="button" (click)="applyCoupon()" [disabled]="applying() || !couponInput()">{{ applying() ? '...' : 'Apply' }}</button>
+              </div>
+              @if (couponError()) {
+                <p class="cart-coupon__error">{{ couponError() }}</p>
+              }
+            }
           </div>
-          @if (cartSvc.cart().couponDiscount > 0) {
-            <div class="cart-summary__row cart-summary__row--discount">
-              <span>Coupon discount</span>
-              <span>-${{ cartSvc.cart().couponDiscount.toFixed(2) }}</span>
-            </div>
-          }
-          <div class="cart-summary__row cart-summary__row--total">
-            <span>Total</span>
-            <span>${{ cartSvc.cart().total.toFixed(2) }}</span>
+        </div><!-- /body -->
+
+        <div class="cart-drawer__foot">
+          <div class="cart-summary">
+            <div class="cart-summary__row"><span>Subtotal</span><span>${{ cartSvc.cart().subtotal.toFixed(2) }}</span></div>
+            @if (cartSvc.cart().couponDiscount > 0) {
+              <div class="cart-summary__row cart-summary__row--discount"><span>Coupon discount</span><span>-${{ cartSvc.cart().couponDiscount.toFixed(2) }}</span></div>
+            }
+            <div class="cart-summary__row cart-summary__row--total"><span>Total</span><span>${{ cartSvc.cart().total.toFixed(2) }}</span></div>
           </div>
+          <button class="btn btn--primary cart-drawer__checkout" type="button" (click)="checkout()" [disabled]="checkingOut()">
+            {{ checkingOut() ? 'Redirecting to checkout...' : 'Checkout — $' + cartSvc.cart().total.toFixed(2) }}
+          </button>
+          <button class="cart-drawer__continue" type="button" (click)="close()">Continue Browsing</button>
         </div>
+      }
 
-        <button
-          class="btn btn--primary cart-drawer__checkout"
-          type="button"
-          (click)="checkout()"
-          [disabled]="checkingOut()"
-        >
-          {{ checkingOut() ? 'Redirecting to checkout...' : 'Checkout — $' + cartSvc.cart().total.toFixed(2) }}
-        </button>
+    } @else {
 
-        <button class="cart-drawer__continue" type="button" (click)="close()">
-          Continue Browsing
-        </button>
-      </div>
+      <!-- Guest: empty state -->
+      @if (cartSvc.guestItems().length === 0) {
+        <div class="cart-drawer__empty">
+          <div class="cart-drawer__empty-icon" aria-hidden="true">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+          </div>
+          <p class="cart-drawer__empty-title">Your cart is empty</p>
+          <p class="cart-drawer__empty-sub">Add a paid resource to get started.</p>
+          <a routerLink="/resources" class="btn btn--primary btn--sm" (click)="close()">Browse Resources</a>
+        </div>
+      }
+
+      <!-- Guest: items + footer -->
+      @else {
+        <div class="cart-drawer__body">
+          <ul class="cart-items" role="list">
+            @for (item of cartSvc.guestItems(); track item.resourceId) {
+              <li class="cart-item">
+                @if (item.thumbnailUrl) {
+                  <img class="cart-item__thumb" [src]="item.thumbnailUrl" [alt]="item.title" loading="lazy" />
+                } @else {
+                  <div class="cart-item__thumb cart-item__thumb--placeholder" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                  </div>
+                }
+                <div class="cart-item__info">
+                  <p class="cart-item__title">{{ item.title }}</p>
+                  <div class="cart-item__pricing">
+                    <span class="cart-item__price">${{ item.price.toFixed(2) }}</span>
+                    @if (item.oldPrice && item.oldPrice > item.price) {
+                      <span class="cart-item__old-price">${{ item.oldPrice.toFixed(2) }}</span>
+                      <span class="cart-item__badge">{{ item.discountPct }}% OFF</span>
+                    }
+                  </div>
+                </div>
+                <button class="cart-item__remove" type="button" [attr.aria-label]="'Remove ' + item.title + ' from cart'" (click)="remove(item.resourceId)">&#10005;</button>
+              </li>
+            }
+          </ul>
+        </div><!-- /body -->
+
+        <div class="cart-drawer__foot">
+          <div class="cart-summary">
+            <div class="cart-summary__row cart-summary__row--total"><span>Total</span><span>${{ guestSubtotal().toFixed(2) }}</span></div>
+          </div>
+          <button class="btn btn--primary cart-drawer__checkout" type="button" (click)="checkout()">
+            Sign In to Checkout
+          </button>
+          <button class="cart-drawer__continue" type="button" (click)="close()">Continue Browsing</button>
+        </div>
+      }
+
     }
 
   </aside>

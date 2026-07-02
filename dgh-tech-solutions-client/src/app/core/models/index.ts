@@ -369,10 +369,9 @@ export interface Order {
   discountAmount: number;
   finalAmount: number;
   paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
-  paymentProvider: 'STRIPE' | 'SQUARE';
-  squarePaymentId?: string;
-  squareOrderId?: string;
+  paymentProvider: 'STRIPE';
   stripeSessionId?: string;
+  stripePaymentIntentId?: string;
   paidAt?: string;
   createdAt?: string;
 }

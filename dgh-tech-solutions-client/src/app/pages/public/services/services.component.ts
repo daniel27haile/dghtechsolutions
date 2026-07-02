@@ -887,7 +887,7 @@ export class ServicesComponent implements OnInit {
   readonly techs = [
     'React', 'Angular', 'Next.js', 'Node.js', 'NestJS', 'Python',
     'TypeScript', 'PostgreSQL', 'MongoDB', 'AWS', 'Docker', 'Kubernetes',
-    'GitHub Actions', 'OpenAI API', 'LangChain', 'Stripe', 'Square', 'AI/ML',
+    'GitHub Actions', 'OpenAI API', 'LangChain', 'Stripe', 'AI/ML',
   ];
 
   // ─── Industries ───────────────────────────────────────────────────────────────

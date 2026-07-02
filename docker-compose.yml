@@ -1,0 +1,45 @@
+services:
+
+  # ── Backend API ──────────────────────────────────────────────────────────────
+  backend:
+    # Local dev / first-time: `docker compose up --build`
+    # Production (CI pushes pre-built images): `docker compose pull && docker compose up -d`
+    build:
+      context: ./dgh-tech-solutions-api
+      dockerfile: Dockerfile
+    image: ${DOCKERHUB_USERNAME:-dghtech}/dgh-backend:latest
+    container_name: dgh-backend
+    restart: unless-stopped
+    env_file:
+      - ./dgh-tech-solutions-api/.env
+    # Port is intentionally not exposed to the host — nginx proxies to it internally
+    expose:
+      - "8000"
+    networks:
+      - dgh-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+
+  # ── Frontend (Angular + nginx) ───────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./dgh-tech-solutions-client
+      dockerfile: Dockerfile
+    image: ${DOCKERHUB_USERNAME:-dghtech}/dgh-frontend:latest
+    container_name: dgh-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - dgh-network
+
+networks:
+  dgh-network:
+    driver: bridge

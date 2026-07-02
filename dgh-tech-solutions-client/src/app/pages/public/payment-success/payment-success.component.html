@@ -1,33 +1,73 @@
 <div class="success-page">
+
   @if (loading()) {
     <div class="success-card">
       <div class="spinner"></div>
       <p>Verifying your payment...</p>
     </div>
-  } @else if (errorMsg()) {
+  }
+
+  @else if (errorMsg()) {
     <div class="success-card">
       <div class="icon icon--error">&#10005;</div>
       <h1>Something went wrong</h1>
       <p class="sub">{{ errorMsg() }}</p>
-      <a routerLink="/my-library" class="btn btn--primary">Go to My Library</a>
+      <div class="success-actions">
+        <a routerLink="/my-library" class="btn btn--primary">Go to My Library</a>
+        <a routerLink="/resources"  class="btn btn--outline">Browse Resources</a>
+      </div>
     </div>
-  } @else {
+  }
+
+  @else if (pending()) {
+    <div class="success-card">
+      <div class="icon icon--pending">&#8987;</div>
+      <h1>Payment Received</h1>
+      <p class="sub">
+        Your payment was successful! Your resources will appear in your library
+        within a few moments. Please check My Library.
+      </p>
+      <div class="success-actions">
+        <a routerLink="/my-library" class="btn btn--primary">Go to My Library</a>
+      </div>
+    </div>
+  }
+
+  @else if (isCart() && resources().length > 0) {
+    <!-- Cart purchase — multiple resources unlocked -->
+    <div class="success-card">
+      <div class="icon icon--success">&#10003;</div>
+      <h1>Payment Successful!</h1>
+      <p class="sub">
+        You now have lifetime access to
+        <strong>{{ resources().length }} resource{{ resources().length === 1 ? '' : 's' }}</strong>:
+      </p>
+      <ul class="success-resource-list">
+        @for (r of resources(); track r._id) {
+          <li>{{ r.title }}</li>
+        }
+      </ul>
+      <div class="success-actions">
+        <a routerLink="/my-library" class="btn btn--primary">Open My Library</a>
+      </div>
+    </div>
+  }
+
+  @else if (resource()) {
+    <!-- Single resource purchase -->
     <div class="success-card">
       <div class="icon icon--success">&#10003;</div>
       <h1>Payment Successful!</h1>
       <p class="sub">You now have lifetime access to:</p>
-      @if (resource()) {
-        <div class="resource-preview">
-          <strong class="resource-title">{{ resource()!.title }}</strong>
-          <span class="resource-cat">{{ resource()!.category }}</span>
-        </div>
-      }
+      <div class="resource-preview">
+        <strong class="resource-title">{{ resource()!.title }}</strong>
+        <span class="resource-cat">{{ resource()!.category }}</span>
+      </div>
       <div class="success-actions">
-        @if (resource()) {
-          <button class="btn btn--primary" (click)="openResource()">Open Resource</button>
-        }
+        <button class="btn btn--primary" (click)="openResource()">Open Resource</button>
         <a routerLink="/my-library" class="btn btn--outline">View My Library</a>
       </div>
     </div>
   }
+
 </div>

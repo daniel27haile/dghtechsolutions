@@ -824,6 +824,16 @@ export class ResourceDetailComponent implements OnInit, OnDestroy {
   addToCart(): void {
     const r = this.resource();
     if (!r?._id) return;
+    if (!this.userAuth.isLoggedIn()) {
+      this.cartSvc.addToGuestCart({
+        resourceId: r._id, title: r.title,
+        thumbnailUrl: r.thumbnailUrl, price: r.price ?? 0,
+        oldPrice: r.pricing?.oldPrice, discountPct: r.pricing?.discountPercent,
+      });
+      this.toastSvc.show(`"${r.title}" added to cart!`);
+      this.cartSvc.openDrawer();
+      return;
+    }
     this.cartSvc.addItem(r._id).subscribe({
       next: () => {
         this.toastSvc.show(`"${r.title}" added to cart!`);

@@ -1,5 +1,5 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CartService } from '../../../core/services/cart.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -16,11 +16,15 @@ export class CartDrawerComponent implements OnInit {
   cartSvc   = inject(CartService);
   toastSvc  = inject(ToastService);
   userAuth  = inject(UserAuthService);
+  private router = inject(Router);
 
   couponInput = signal('');
   couponError = signal('');
   applying    = signal(false);
   checkingOut = signal(false);
+
+  itemCount    = computed(() => this.userAuth.isLoggedIn() ? this.cartSvc.cart().itemCount : this.cartSvc.guestItems().length);
+  guestSubtotal = computed(() => this.cartSvc.guestItems().reduce((s, i) => s + i.price, 0));
 
   ngOnInit(): void {
     if (this.userAuth.isLoggedIn()) {
@@ -33,6 +37,10 @@ export class CartDrawerComponent implements OnInit {
   }
 
   remove(resourceId: string): void {
+    if (!this.userAuth.isLoggedIn()) {
+      this.cartSvc.removeFromGuestCart(resourceId);
+      return;
+    }
     this.cartSvc.removeItem(resourceId).subscribe({
       error: () => this.toastSvc.show('Could not remove item.', 'error'),
     });
@@ -60,15 +68,16 @@ export class CartDrawerComponent implements OnInit {
 
   checkout(): void {
     if (!this.userAuth.isLoggedIn()) {
-      this.toastSvc.show('Please sign in to checkout.', 'error');
+      this.close();
+      this.router.navigate(['/login'], { queryParams: { returnUrl: '/resources' } });
       return;
     }
     this.checkingOut.set(true);
-    this.cartSvc.squareCheckout().subscribe({
+    this.cartSvc.stripeCartCheckout().subscribe({
       next: (res) => {
         this.checkingOut.set(false);
         if (res.data?.free) {
-          this.toastSvc.show('Courses unlocked — enjoy!');
+          this.toastSvc.show('Resources unlocked — enjoy!');
           this.cartSvc.load();
           this.close();
         } else if (res.data?.url) {
@@ -77,7 +86,7 @@ export class CartDrawerComponent implements OnInit {
       },
       error: (e: { error?: { message?: string } }) => {
         this.checkingOut.set(false);
-        this.toastSvc.show(e?.error?.message || 'Checkout failed.', 'error');
+        this.toastSvc.show(e?.error?.message || 'Checkout failed. Please try again.', 'error');
       },
     });
   }

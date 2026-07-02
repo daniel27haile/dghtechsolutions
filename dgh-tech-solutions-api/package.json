@@ -8,6 +8,9 @@
     "dev": "nodemon server.js",
     "seed": "node scripts/seed.js"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1073.0",
     "@aws-sdk/s3-request-presigner": "^3.1073.0",
@@ -15,6 +18,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "helmet": "^8.0.0",
     "express-rate-limit": "^7.3.1",
     "express-validator": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
@@ -22,7 +26,6 @@
     "morgan": "^1.10.0",
     "multer": "^2.2.0",
     "multer-s3": "^3.0.1",
-    "square": "^44.2.0",
     "stripe": "^22.2.2",
     "uuid": "^14.0.1"
   },

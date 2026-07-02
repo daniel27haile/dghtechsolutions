@@ -44,4 +44,19 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-module.exports = { loginLimiter, contactLimiter, apiLimiter };
+/**
+ * Registration rate limiter — prevents mass account creation.
+ */
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: process.env.NODE_ENV === 'development' ? 1000 : 20,
+  message: {
+    success: false,
+    message: 'Too many accounts created from this IP, please try again after an hour.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'development',
+});
+
+module.exports = { loginLimiter, contactLimiter, apiLimiter, registerLimiter };

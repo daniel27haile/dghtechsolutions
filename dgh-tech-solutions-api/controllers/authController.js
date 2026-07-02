@@ -6,7 +6,7 @@ const AdminUser = require('../models/AdminUser');
  * Generate a signed JWT token for the given admin user ID.
  */
 const signToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, {
+  jwt.sign({ id, type: 'admin' }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   });
 

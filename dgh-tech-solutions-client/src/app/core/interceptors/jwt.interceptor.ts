@@ -9,7 +9,6 @@ const USER_ROUTE_PATTERNS = [
   '/api/users/',
   '/api/payments/',
   '/api/cart',
-  '/api/square',
 ];
 
 function isUserRoute(url: string): boolean {

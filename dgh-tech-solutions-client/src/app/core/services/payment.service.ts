@@ -15,7 +15,10 @@ export interface AccessResponse {
 
 export interface VerifySessionResponse {
   paid: boolean;
+  isCart: boolean;
   resource: Resource | null;
+  resources: Resource[];
+  resourceCount: number;
 }
 
 @Injectable({ providedIn: 'root' })

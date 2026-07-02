@@ -22,15 +22,10 @@ const orderSchema = new mongoose.Schema(
     discountAmount:  { type: Number, default: 0, min: 0 },
     finalAmount:     { type: Number, required: true, min: 0 },
     currency:        { type: String, default: 'USD' },
-    paymentStatus:   { type: String, enum: ['PENDING', 'PAID', 'FAILED', 'REFUNDED'], default: 'PENDING' },
-    paymentProvider: { type: String, enum: ['STRIPE', 'SQUARE'], default: 'STRIPE' },
-    // Stripe fields
+    paymentStatus:         { type: String, enum: ['PENDING', 'PAID', 'FAILED', 'REFUNDED'], default: 'PENDING' },
+    paymentProvider:       { type: String, default: 'STRIPE' },
     stripeSessionId:       { type: String, default: '' },
     stripePaymentIntentId: { type: String, default: '' },
-    // Square fields
-    squarePaymentId:       { type: String, default: '' },
-    squareOrderId:         { type: String, default: '' },
-    idempotencyKey:        { type: String, default: '' },
     paidAt:                { type: Date, default: null },
   },
   { timestamps: true }
@@ -39,5 +34,6 @@ const orderSchema = new mongoose.Schema(
 orderSchema.index({ userId: 1, createdAt: -1 });
 orderSchema.index({ paymentStatus: 1 });
 orderSchema.index({ 'items.ownerId': 1 });
+orderSchema.index({ stripeSessionId: 1 });
 
 module.exports = mongoose.model('Order', orderSchema);

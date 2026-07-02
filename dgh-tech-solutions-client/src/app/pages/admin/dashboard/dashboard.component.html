@@ -5,6 +5,20 @@
       <p class="page-sub">Welcome back — here's what's happening.</p>
     </div>
     <div class="header-actions">
+      @if (lastUpdated()) {
+        <span class="last-updated">Updated {{ lastUpdated() | date:'h:mm:ss a' }}</span>
+      }
+      <button
+        class="btn-action secondary btn-refresh"
+        type="button"
+        (click)="manualRefresh()"
+        [disabled]="refreshing() || loading()"
+        [class.btn-refresh--spinning]="refreshing()"
+        aria-label="Refresh dashboard"
+      >
+        <span class="refresh-icon">↻</span>
+        {{ refreshing() ? 'Refreshing...' : 'Refresh' }}
+      </button>
       <a routerLink="/admin/projects/new" class="btn-action">+ New Project</a>
       <a routerLink="/admin/messages" class="btn-action secondary">
         Messages
@@ -14,6 +28,13 @@
       </a>
     </div>
   </div>
+
+  @if (refreshError()) {
+    <div class="refresh-error">
+      <span>⚠ {{ refreshError() }}</span>
+      <button class="refresh-error__dismiss" type="button" (click)="refreshError.set('')">✕</button>
+    </div>
+  }
 
   @if (loading()) {
     <div class="loading-state">

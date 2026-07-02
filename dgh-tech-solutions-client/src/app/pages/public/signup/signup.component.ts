@@ -1,7 +1,8 @@
 import { Component, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { UserAuthService } from '../../../core/services/user-auth.service';
+import { CartService } from '../../../core/services/cart.service';
 
 @Component({
   selector: 'app-user-signup',
@@ -20,12 +21,17 @@ export class UserSignupComponent {
   loading  = signal(false);
   errorMsg = signal('');
 
+  private returnUrl = '/my-library';
+
   constructor(
     private fb:       FormBuilder,
     private userAuth: UserAuthService,
+    private cartSvc:  CartService,
     private router:   Router,
+    route:            ActivatedRoute,
   ) {
-    if (userAuth.isLoggedIn()) router.navigate(['/my-library']);
+    this.returnUrl = route.snapshot.queryParams['returnUrl'] ?? '/my-library';
+    if (userAuth.isLoggedIn()) router.navigate([this.returnUrl]);
   }
 
   ctrl(name: string): AbstractControl { return this.form.get(name)!; }
@@ -36,7 +42,15 @@ export class UserSignupComponent {
     this.errorMsg.set('');
     const { name, email, password } = this.form.value;
     this.userAuth.register(name!, email!, password!).subscribe({
-      next:  () => this.router.navigate(['/my-library']),
+      next: () => {
+        const hadGuestItems = this.cartSvc.guestItems().length > 0;
+        this.cartSvc.mergeGuestCart().subscribe(() => {
+          this.cartSvc.load();
+          this.router.navigateByUrl(this.returnUrl).then(() => {
+            if (hadGuestItems) this.cartSvc.openDrawer();
+          });
+        });
+      },
       error: (e: { error?: { message?: string } }) => {
         this.errorMsg.set(e?.error?.message || 'Registration failed. Please try again.');
         this.loading.set(false);
